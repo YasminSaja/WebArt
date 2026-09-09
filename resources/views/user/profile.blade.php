@@ -12,7 +12,6 @@
 
     <title>CreateTopia - Profile</title>
 
-    <!-- TAILWIND CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 
 </head>
@@ -31,8 +30,6 @@
 
         <div class="flex items-center gap-5">
 
-            <!-- LOGO -->
-
             <a
                 href="{{ route('user.home') }}"
                 class="font-serif text-xl font-bold text-[#e05252]"
@@ -40,8 +37,6 @@
                 CreateTopia
             </a>
 
-
-            <!-- HOME -->
 
             <a
                 href="{{ route('user.home') }}"
@@ -51,8 +46,6 @@
             </a>
 
 
-            <!-- ARTS -->
-
             <a
                 href="{{ route('user.arts') }}"
                 class="text-[#e05252] text-xs hover:text-[#72ccd2] transition"
@@ -60,8 +53,6 @@
                 Arts
             </a>
 
-
-            <!-- ARTIST -->
 
             <a
                 href="{{ route('user.artist') }}"
@@ -71,8 +62,6 @@
             </a>
 
 
-            <!-- CATEGORY -->
-
             <a
                 href="{{ route('user.category') }}"
                 class="text-[#e05252] text-xs hover:text-[#72ccd2] transition"
@@ -80,8 +69,6 @@
                 Category
             </a>
 
-
-            <!-- PROFILE -->
 
             <a
                 href="{{ route('user.profile') }}"
@@ -97,7 +84,7 @@
 
 
     <!-- ================================================= -->
-    <!-- PROFILE HEADER -->
+    <!-- PROFILE HEADER / BANNER -->
     <!-- ================================================= -->
 
     <section class="w-full bg-[#72ccd2]">
@@ -168,7 +155,6 @@
 
                 </div>
 
-
             </div>
 
         </div>
@@ -182,7 +168,6 @@
     <!-- ================================================= -->
 
     <main class="w-full">
-
 
         <section
             class="max-w-6xl mx-auto px-8 md:px-14 py-12"
@@ -260,24 +245,21 @@
 
 
     <!-- ================================================= -->
-    <!-- ART DETAIL -->
+    <!-- ART DETAIL MODAL -->
     <!-- ================================================= -->
 
     <div
         id="artDetail"
-        class="hidden fixed inset-0 z-50 bg-white/80 backdrop-blur-sm items-center justify-center p-4 md:p-8"
+        class="hidden fixed inset-0 z-40 bg-white/80 backdrop-blur-sm items-center justify-center p-4 md:p-8"
     >
-
 
         <div
             class="relative w-full max-w-6xl bg-white shadow-xl overflow-hidden"
         >
 
-
             <!-- TOP -->
 
             <div class="h-6 bg-[#ffdf96]"></div>
-
 
 
             <!-- CLOSE -->
@@ -288,7 +270,6 @@
             >
                 ×
             </button>
-
 
 
             <!-- CONTENT -->
@@ -304,10 +285,7 @@
                     class="w-full md:w-[45%] p-8 md:p-12 flex flex-col justify-between"
                 >
 
-
                     <div>
-
-                        <!-- TITLE -->
 
                         <h1
                             id="detailTitle"
@@ -317,9 +295,6 @@
                         </h1>
 
 
-
-                        <!-- DESCRIPTION -->
-
                         <p
                             id="detailDescription"
                             class="mt-6 text-[#ff7957] text-sm leading-5 max-w-md"
@@ -327,9 +302,6 @@
                             Description
                         </p>
 
-
-
-                        <!-- CATEGORY -->
 
                         <p
                             id="detailCategory"
@@ -340,9 +312,6 @@
 
                     </div>
 
-
-
-                    <!-- UPLOAD INFO -->
 
                     <div
                         class="text-center text-[#ff7957] mt-10"
@@ -361,17 +330,15 @@
 
                     </div>
 
-
                 </div>
 
 
 
-                <!-- RIGHT / IMAGE -->
+                <!-- RIGHT IMAGE -->
 
                 <div
                     class="w-full md:w-[55%] min-h-[450px] bg-white relative flex items-center justify-center"
                 >
-
 
                     <img
                         id="detailImage"
@@ -381,8 +348,7 @@
                     >
 
 
-
-                    <!-- LEFT ARROW -->
+                    <!-- PREVIOUS -->
 
                     <button
                         id="previousArt"
@@ -393,8 +359,7 @@
                     </button>
 
 
-
-                    <!-- RIGHT ARROW -->
+                    <!-- NEXT -->
 
                     <button
                         id="nextArt"
@@ -404,17 +369,252 @@
                         →
                     </button>
 
-
                 </div>
 
             </div>
-
 
 
             <!-- BOTTOM -->
 
             <div class="h-6 bg-[#ffdf96]"></div>
 
+        </div>
+
+    </div>
+
+
+
+    <!-- ================================================= -->
+    <!-- EDIT ART MODAL -->
+    <!-- ================================================= -->
+
+    <div
+        id="editArtModal"
+        class="hidden fixed inset-0 z-50 bg-black/30 backdrop-blur-sm items-center justify-center p-4"
+    >
+
+        <div
+            class="relative w-full max-w-[650px] max-h-[90vh] overflow-y-auto bg-[#fef6eb] shadow-xl"
+        >
+
+
+            <!-- HEADER -->
+
+            <div
+                class="h-5 bg-[#ffdf96]"
+            ></div>
+
+
+            <button
+                onclick="closeEditArt()"
+                class="absolute top-7 right-5 text-[#e05252] text-2xl hover:scale-110 transition"
+            >
+                ×
+            </button>
+
+
+            <div class="p-8 md:p-10">
+
+
+                <!-- TITLE -->
+
+                <h2
+                    class="font-serif text-3xl font-bold text-[#e05252] text-center mb-7"
+                >
+                    Edit Art
+                </h2>
+
+
+
+                <!-- IMAGE PREVIEW -->
+
+                <div class="flex justify-center mb-5">
+
+                    <div
+                        class="w-[230px] h-[180px] bg-white overflow-hidden"
+                    >
+
+                        <img
+                            id="editImagePreview"
+                            src=""
+                            class="w-full h-full object-cover"
+                            alt="Art preview"
+                        >
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- CHANGE IMAGE -->
+
+                <label
+                    class="block text-[#e05252] text-[10px] mb-1"
+                >
+                    Change Image
+                </label>
+
+                <input
+                    id="editImage"
+                    type="file"
+                    accept="image/*"
+                    onchange="previewEditImage(event)"
+                    class="w-full text-[10px] mb-5"
+                >
+
+
+
+                <!-- ART NAME -->
+
+                <label
+                    class="block text-[#e05252] text-[10px] mb-1"
+                >
+                    Art Name
+                </label>
+
+                <input
+                    id="editTitle"
+                    type="text"
+                    class="w-full h-[30px] rounded-full border border-[#cbb8b8] bg-[#eadada] outline-none px-4 text-[10px] mb-5"
+                >
+
+
+
+                <!-- DESCRIPTION -->
+
+                <label
+                    class="block text-[#e05252] text-[10px] mb-1"
+                >
+                    Description
+                </label>
+
+                <textarea
+                    id="editDescription"
+                    class="w-full h-[100px] rounded-[15px] border border-[#cbb8b8] bg-[#eadada] outline-none p-4 text-[10px] resize-none mb-5"
+                ></textarea>
+
+
+
+                <!-- CATEGORY -->
+
+                <label
+                    class="block text-[#e05252] text-[10px] mb-1"
+                >
+                    Category
+                </label>
+
+                <select
+                    id="editCategory"
+                    class="w-full h-[30px] rounded-full border border-[#cbb8b8] bg-[#eadada] outline-none px-4 text-[10px] mb-7"
+                >
+
+                    <option value="Digital">
+                        Digital
+                    </option>
+
+                    <option value="Traditional">
+                        Traditional
+                    </option>
+
+                </select>
+
+
+
+                <!-- BUTTON -->
+
+                <div class="flex justify-center gap-3">
+
+                    <button
+                        onclick="closeEditArt()"
+                        class="w-[80px] h-[28px] rounded-full border border-[#e05252] text-[#e05252] text-[9px] hover:bg-[#e05252] hover:text-white transition"
+                    >
+                        Cancel
+                    </button>
+
+
+                    <button
+                        onclick="saveEditedArt()"
+                        class="w-[100px] h-[28px] rounded-full bg-[#e05252] text-white text-[9px] hover:opacity-80 transition"
+                    >
+                        Save Changes
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- BOTTOM -->
+
+            <div class="h-5 bg-[#ffdf96]"></div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ================================================= -->
+    <!-- SETTINGS MODAL -->
+    <!-- ================================================= -->
+
+    <div
+        id="artSettingsModal"
+        class="hidden fixed inset-0 z-50 bg-black/30 backdrop-blur-sm items-center justify-center p-4"
+    >
+
+        <div
+            class="w-full max-w-[320px] bg-[#fef6eb] shadow-xl"
+        >
+
+            <div class="h-4 bg-[#ffdf96]"></div>
+
+
+            <div class="p-7 text-center">
+
+                <h2
+                    class="font-serif text-2xl font-bold text-[#e05252] mb-2"
+                >
+                    Art Settings
+                </h2>
+
+
+                <p
+                    id="settingsArtName"
+                    class="text-gray-500 text-[10px] mb-6"
+                >
+                    Artwork
+                </p>
+
+
+                <button
+                    id="settingsEditButton"
+                    class="w-full h-[30px] rounded-full bg-[#72ccd2] text-white text-[9px] hover:opacity-80 transition mb-3"
+                >
+                    Edit Art
+                </button>
+
+
+                <button
+                    id="settingsDeleteButton"
+                    class="w-full h-[30px] rounded-full border border-[#e05252] text-[#e05252] text-[9px] hover:bg-[#e05252] hover:text-white transition mb-3"
+                >
+                    Delete Art
+                </button>
+
+
+                <button
+                    onclick="closeArtSettings()"
+                    class="w-full h-[30px] rounded-full bg-gray-200 text-gray-600 text-[9px] hover:bg-gray-300 transition"
+                >
+                    Cancel
+                </button>
+
+            </div>
+
+
+            <div class="h-4 bg-[#ffdf96]"></div>
 
         </div>
 
@@ -443,7 +643,6 @@
             localStorage.getItem("profilePhoto");
 
 
-
         if (savedName && savedName.trim() !== "") {
 
             document
@@ -453,7 +652,6 @@
         }
 
 
-
         if (savedBio && savedBio.trim() !== "") {
 
             document
@@ -461,7 +659,6 @@
                 .textContent = savedBio;
 
         }
-
 
 
         if (savedPhoto) {
@@ -501,24 +698,45 @@
 
 
 
-        if (userArts.length === 0) {
+        renderArts();
 
-            emptyArts.classList.remove("hidden");
 
-        } else {
 
-            userArts.forEach(function (art, index) {
+        // =================================================
+        // RENDER ALL ARTS
+        // =================================================
 
-                createArtCard(art, index);
+        function renderArts() {
 
-            });
+            artsContainer.innerHTML = "";
+
+
+            if (userArts.length === 0) {
+
+                emptyArts.classList.remove("hidden");
+
+                return;
+
+            }
+
+
+            emptyArts.classList.add("hidden");
+
+
+            userArts.forEach(
+                function (art, index) {
+
+                    createArtCard(art, index);
+
+                }
+            );
 
         }
 
 
 
         // =================================================
-        // CREATE CARD
+        // CREATE ART CARD
         // =================================================
 
         function createArtCard(art, index) {
@@ -528,15 +746,21 @@
 
 
             card.className =
-                "bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition cursor-pointer";
+                "bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition";
+
 
 
             card.innerHTML = `
 
-                <div class="w-full h-56 bg-[#fff8ee] overflow-hidden">
+                <!-- IMAGE -->
+
+                <div
+                    class="w-full h-56 bg-[#fff8ee] overflow-hidden cursor-pointer"
+                    onclick="openArtDetail(${index})"
+                >
 
                     <img
-                        src="${art.image}"
+                        src="${art.image || ""}"
                         alt="${escapeHTML(art.title || "Artwork")}"
                         class="w-full h-full object-cover hover:scale-105 transition duration-300"
                     >
@@ -544,41 +768,71 @@
                 </div>
 
 
+                <!-- CONTENT -->
+
                 <div class="p-4">
 
-                    <h3
-                        class="font-serif font-bold text-[#e05252] text-lg uppercase"
-                    >
-                        ${escapeHTML(art.title || "Untitled")}
-                    </h3>
 
+                    <!-- TITLE + SETTINGS -->
+
+                    <div class="flex items-start justify-between gap-2">
+
+                        <h3
+                            class="font-serif font-bold text-[#e05252] text-lg uppercase cursor-pointer"
+                            onclick="openArtDetail(${index})"
+                        >
+                            ${escapeHTML(
+                                art.title || "Untitled"
+                            )}
+                        </h3>
+
+
+                        <!-- SETTINGS -->
+
+                        <button
+                            onclick="event.stopPropagation(); openArtSettings(${index})"
+                            class="w-7 h-7 flex items-center justify-center rounded-full text-[#e05252] hover:bg-[#eedcdc] transition text-sm"
+                        >
+                            ⚙
+                        </button>
+
+                    </div>
+
+
+                    <!-- DESCRIPTION -->
 
                     <p
                         class="text-xs text-gray-500 mt-2 line-clamp-3"
                     >
-                        ${escapeHTML(art.description || "No description.")}
+                        ${escapeHTML(
+                            art.description || "No description."
+                        )}
                     </p>
 
+
+                    <!-- CATEGORY -->
 
                     <p
                         class="text-[9px] text-[#72aeb5] mt-3"
                     >
-                        ${escapeHTML(art.category || "Art")}
+                        ${escapeHTML(
+                            art.category || "Art"
+                        )}
                     </p>
+
+
+                    <!-- EDIT -->
+
+                    <button
+                        onclick="event.stopPropagation(); editArt(${index})"
+                        class="w-full h-[28px] mt-4 rounded-full bg-[#72ccd2] text-white text-[9px] hover:opacity-80 transition"
+                    >
+                        Edit
+                    </button>
 
                 </div>
 
             `;
-
-
-            card.addEventListener(
-                "click",
-                function () {
-
-                    openArtDetail(index);
-
-                }
-            );
 
 
             artsContainer.appendChild(card);
@@ -588,7 +842,7 @@
 
 
         // =================================================
-        // OPEN DETAIL
+        // ART DETAIL
         // =================================================
 
         let currentArtIndex = 0;
@@ -616,42 +870,26 @@
 
 
 
-        // =================================================
-        // SHOW ART
-        // =================================================
-
         function showArt() {
 
             const art =
                 userArts[currentArtIndex];
 
 
-            if (!art) {
+            if (!art) return;
 
-                return;
-
-            }
-
-
-
-            // IMAGE
 
             document
                 .getElementById("detailImage")
-                .src = art.image || "";
+                .src =
+                art.image || "";
 
-
-
-            // TITLE
 
             document
                 .getElementById("detailTitle")
                 .textContent =
                 art.title || "Untitled";
 
-
-
-            // DESCRIPTION
 
             document
                 .getElementById("detailDescription")
@@ -660,18 +898,12 @@
                 "No description.";
 
 
-
-            // CATEGORY
-
             document
                 .getElementById("detailCategory")
                 .textContent =
                 art.category ||
                 "Art";
 
-
-
-            // CREATOR
 
             const creator =
                 art.creator ||
@@ -685,8 +917,6 @@
                 creator;
 
 
-
-            // DATE
 
             let dateText =
                 "Unknown date";
@@ -718,9 +948,7 @@
 
 
 
-            // =================================================
             // ARROWS
-            // =================================================
 
             const previousButton =
                 document.getElementById("previousArt");
@@ -728,9 +956,6 @@
             const nextButton =
                 document.getElementById("nextArt");
 
-
-
-            // CUMA 1 ART
 
             if (userArts.length <= 1) {
 
@@ -743,16 +968,10 @@
             }
 
 
-
-            // ADA BANYAK ART
-
             previousButton.classList.remove("hidden");
 
             nextButton.classList.remove("hidden");
 
-
-
-            // ART PERTAMA
 
             if (currentArtIndex === 0) {
 
@@ -760,9 +979,6 @@
 
             }
 
-
-
-            // ART TERAKHIR
 
             if (
                 currentArtIndex ===
@@ -817,7 +1033,7 @@
 
 
         // =================================================
-        // CLOSE
+        // CLOSE DETAIL
         // =================================================
 
         function closeArtDetail() {
@@ -838,14 +1054,440 @@
 
 
         // =================================================
-        // CLICK OUTSIDE
+        // EDIT ART
+        // =================================================
+
+        let editingArtIndex = null;
+
+
+        function editArt(index) {
+
+            const art =
+                userArts[index];
+
+
+            if (!art) return;
+
+
+            editingArtIndex = index;
+
+
+            document
+                .getElementById("editImagePreview")
+                .src =
+                art.image || "";
+
+
+            document
+                .getElementById("editTitle")
+                .value =
+                art.title || "";
+
+
+            document
+                .getElementById("editDescription")
+                .value =
+                art.description || "";
+
+
+            document
+                .getElementById("editCategory")
+                .value =
+                art.category || "Digital";
+
+
+            document
+                .getElementById("editImage")
+                .value = "";
+
+
+            const modal =
+                document.getElementById("editArtModal");
+
+
+            modal.classList.remove("hidden");
+
+            modal.classList.add("flex");
+
+
+            document.body.classList.add("overflow-hidden");
+
+        }
+
+
+
+        // =================================================
+        // PREVIEW EDIT IMAGE
+        // =================================================
+
+        function previewEditImage(event) {
+
+            const file =
+                event.target.files[0];
+
+
+            if (!file) return;
+
+
+            const reader =
+                new FileReader();
+
+
+            reader.onload =
+                function(e) {
+
+                    document
+                        .getElementById("editImagePreview")
+                        .src =
+                        e.target.result;
+
+                };
+
+
+            reader.readAsDataURL(file);
+
+        }
+
+
+
+        // =================================================
+        // SAVE EDITED ART
+        // =================================================
+
+        function saveEditedArt() {
+
+            if (editingArtIndex === null) return;
+
+
+            const title =
+                document
+                    .getElementById("editTitle")
+                    .value
+                    .trim();
+
+
+            const description =
+                document
+                    .getElementById("editDescription")
+                    .value
+                    .trim();
+
+
+            const category =
+                document
+                    .getElementById("editCategory")
+                    .value;
+
+
+            if (!title) {
+
+                alert("Art Name belum diisi.");
+
+                return;
+
+            }
+
+
+            if (!description) {
+
+                alert("Description belum diisi.");
+
+                return;
+
+            }
+
+
+            const art =
+                userArts[editingArtIndex];
+
+
+            art.title =
+                title;
+
+
+            art.description =
+                description;
+
+
+            art.category =
+                category;
+
+
+            const file =
+                document
+                    .getElementById("editImage")
+                    .files[0];
+
+
+            if (file) {
+
+                const reader =
+                    new FileReader();
+
+
+                reader.onload =
+                    function(e) {
+
+                        art.image =
+                            e.target.result;
+
+
+                        finishSaveArt();
+
+                    };
+
+
+                reader.readAsDataURL(file);
+
+            } else {
+
+                finishSaveArt();
+
+            }
+
+        }
+
+
+
+        // =================================================
+        // FINISH SAVE
+        // =================================================
+
+        function finishSaveArt() {
+
+            localStorage.setItem(
+                "userArts",
+                JSON.stringify(userArts)
+            );
+
+
+            closeEditArt();
+
+
+            renderArts();
+
+
+            alert("Art berhasil diperbarui!");
+
+        }
+
+
+
+        // =================================================
+        // CLOSE EDIT
+        // =================================================
+
+        function closeEditArt() {
+
+            const modal =
+                document.getElementById("editArtModal");
+
+
+            modal.classList.add("hidden");
+
+            modal.classList.remove("flex");
+
+
+            document.body.classList.remove("overflow-hidden");
+
+
+            editingArtIndex = null;
+
+        }
+
+
+
+        // =================================================
+        // ART SETTINGS
+        // =================================================
+
+        let settingsArtIndex = null;
+
+
+        function openArtSettings(index) {
+
+            const art =
+                userArts[index];
+
+
+            if (!art) return;
+
+
+            settingsArtIndex = index;
+
+
+            document
+                .getElementById("settingsArtName")
+                .textContent =
+                art.title || "Untitled";
+
+
+            const modal =
+                document.getElementById("artSettingsModal");
+
+
+            modal.classList.remove("hidden");
+
+            modal.classList.add("flex");
+
+
+            document.body.classList.add("overflow-hidden");
+
+
+
+            // EDIT BUTTON
+
+            document
+                .getElementById("settingsEditButton")
+                .onclick =
+                function() {
+
+                    closeArtSettings();
+
+                    editArt(index);
+
+                };
+
+
+
+            // DELETE BUTTON
+
+            document
+                .getElementById("settingsDeleteButton")
+                .onclick =
+                function() {
+
+                    deleteArt(index);
+
+                };
+
+        }
+
+
+
+        // =================================================
+        // CLOSE SETTINGS
+        // =================================================
+
+        function closeArtSettings() {
+
+            const modal =
+                document.getElementById("artSettingsModal");
+
+
+            modal.classList.add("hidden");
+
+            modal.classList.remove("flex");
+
+
+            document.body.classList.remove("overflow-hidden");
+
+
+            settingsArtIndex = null;
+
+        }
+
+
+
+        // =================================================
+        // DELETE ART
+        // =================================================
+
+        function deleteArt(index) {
+
+            const art =
+                userArts[index];
+
+
+            if (!art) return;
+
+
+            const confirmDelete =
+                confirm(
+                    'Delete "' +
+                    (art.title || "Untitled") +
+                    '"?'
+                );
+
+
+            if (!confirmDelete) return;
+
+
+            userArts.splice(
+                index,
+                1
+            );
+
+
+            localStorage.setItem(
+                "userArts",
+                JSON.stringify(userArts)
+            );
+
+
+            closeArtSettings();
+
+
+            renderArts();
+
+
+            alert("Art berhasil dihapus.");
+
+        }
+
+
+
+        // =================================================
+        // CLICK OUTSIDE EDIT MODAL
+        // =================================================
+
+        document
+            .getElementById("editArtModal")
+            .addEventListener(
+                "click",
+                function(event) {
+
+                    if (event.target === this) {
+
+                        closeEditArt();
+
+                    }
+
+                }
+            );
+
+
+
+        // =================================================
+        // CLICK OUTSIDE SETTINGS
+        // =================================================
+
+        document
+            .getElementById("artSettingsModal")
+            .addEventListener(
+                "click",
+                function(event) {
+
+                    if (event.target === this) {
+
+                        closeArtSettings();
+
+                    }
+
+                }
+            );
+
+
+
+        // =================================================
+        // CLICK OUTSIDE DETAIL
         // =================================================
 
         document
             .getElementById("artDetail")
             .addEventListener(
                 "click",
-                function (event) {
+                function(event) {
 
                     if (event.target === this) {
 
@@ -859,41 +1501,82 @@
 
 
         // =================================================
-        // ESC + KEYBOARD ARROWS
+        // KEYBOARD
         // =================================================
 
         document.addEventListener(
             "keydown",
-            function (event) {
+            function(event) {
 
                 const detail =
                     document.getElementById("artDetail");
 
 
-                if (detail.classList.contains("hidden")) {
+                const editModal =
+                    document.getElementById("editArtModal");
 
-                    return;
 
-                }
+                const settingsModal =
+                    document.getElementById("artSettingsModal");
 
+
+                // ESC
 
                 if (event.key === "Escape") {
 
-                    closeArtDetail();
+                    if (
+                        !editModal.classList.contains("hidden")
+                    ) {
+
+                        closeEditArt();
+
+                        return;
+
+                    }
+
+
+                    if (
+                        !settingsModal.classList.contains("hidden")
+                    ) {
+
+                        closeArtSettings();
+
+                        return;
+
+                    }
+
+
+                    if (
+                        !detail.classList.contains("hidden")
+                    ) {
+
+                        closeArtDetail();
+
+                        return;
+
+                    }
 
                 }
 
 
-                if (event.key === "ArrowRight") {
+                // ARROW
 
-                    nextArt();
+                if (
+                    !detail.classList.contains("hidden")
+                ) {
 
-                }
+                    if (event.key === "ArrowRight") {
+
+                        nextArt();
+
+                    }
 
 
-                if (event.key === "ArrowLeft") {
+                    if (event.key === "ArrowLeft") {
 
-                    previousArt();
+                        previousArt();
+
+                    }
 
                 }
 
@@ -911,8 +1594,10 @@
             const div =
                 document.createElement("div");
 
+
             div.textContent =
                 text || "";
+
 
             return div.innerHTML;
 
