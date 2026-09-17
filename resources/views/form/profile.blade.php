@@ -14,6 +14,146 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
 
+    <style>
+
+        /* ================================================= */
+        /* EXTRA ANIMATION - TAMPILAN DASAR TETAP */
+        /* ================================================= */
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+
+        }
+
+
+        @keyframes floatSlow {
+
+            0%,
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-7px) rotate(5deg);
+            }
+
+        }
+
+
+        @keyframes popIn {
+
+            from {
+                opacity: 0;
+                transform: scale(.96);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+        }
+
+
+        .float-decoration {
+            animation: float 4s ease-in-out infinite;
+        }
+
+
+        .float-slow {
+            animation: floatSlow 5s ease-in-out infinite;
+        }
+
+
+        .form-card {
+            animation: popIn .5s ease-out;
+            transition:
+                box-shadow .3s ease,
+                transform .3s ease;
+        }
+
+
+        .form-card:hover {
+            box-shadow:
+                0 18px 45px rgba(120, 65, 45, .12);
+
+            transform: translateY(-2px);
+        }
+
+
+        .input-effect {
+            transition:
+                border-color .2s ease,
+                box-shadow .2s ease,
+                transform .2s ease;
+        }
+
+
+        .input-effect:focus {
+            border-color: #c83232;
+
+            box-shadow:
+                0 0 0 3px rgba(200, 50, 50, .10);
+
+            transform: translateY(-1px);
+        }
+
+
+        .button-effect {
+            transition:
+                transform .2s ease,
+                box-shadow .2s ease,
+                opacity .2s ease;
+        }
+
+
+        .button-effect:hover {
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 7px 15px rgba(200, 50, 50, .20);
+        }
+
+
+        .profile-circle {
+            transition:
+                transform .3s ease,
+                box-shadow .3s ease;
+        }
+
+
+        .profile-circle:hover {
+            transform: scale(1.03);
+
+            box-shadow:
+                0 10px 25px rgba(200, 50, 50, .15);
+        }
+
+
+        .picture-button {
+            transition:
+                transform .2s ease,
+                box-shadow .2s ease;
+        }
+
+
+        .picture-button:hover {
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 6px 12px rgba(200, 50, 50, .18);
+        }
+
+    </style>
+
 </head>
 
 
@@ -24,29 +164,42 @@
     <!-- MAIN -->
     <!-- ================================================= -->
 
-    <main class="relative w-full min-h-screen flex items-center justify-center p-8">
+    <main
+        class="relative w-full min-h-screen flex items-center justify-center p-8 overflow-hidden"
+    >
 
 
-        <!-- BACK -->
+        <!-- ================================================= -->
+        <!-- DECORATIONS -->
+        <!-- HANYA TAMBAHAN, TIDAK MENGUBAH LAYOUT -->
+        <!-- ================================================= -->
 
-        <a
-            href="{{ route('user.profile') }}"
-            class="absolute top-6 left-8 text-[#c83232] text-[9px] hover:underline"
+        <div
+            class="float-decoration absolute top-[15%] left-[12%] text-[#c83232]/30 text-3xl pointer-events-none"
         >
-            ← Back
-        </a>
+            ✦
+        </div>
 
 
-
-        <!-- SETTINGS -->
-
-        <button
-            type="button"
-            onclick="openSettings()"
-            class="absolute top-6 right-8 text-[#c83232] text-[10px] hover:underline"
+        <div
+            class="float-slow absolute top-[22%] right-[14%] text-[#ff7957]/40 text-2xl pointer-events-none"
         >
-            ⚙ Settings
-        </button>
+            ●
+        </div>
+
+
+        <div
+            class="float-decoration absolute bottom-[18%] left-[18%] text-[#c83232]/25 text-2xl pointer-events-none"
+        >
+            ♡
+        </div>
+
+
+        <div
+            class="float-slow absolute bottom-[15%] right-[18%] text-[#ff7957]/35 text-3xl pointer-events-none"
+        >
+            ✦
+        </div>
 
 
 
@@ -54,20 +207,26 @@
         <!-- FORM -->
         <!-- ================================================= -->
 
-        <div class="w-full max-w-[620px] min-h-[390px] bg-[#fff8ee] flex">
+        <div
+            class="form-card w-full max-w-[620px] min-h-[390px] bg-[#fff8ee] flex relative z-10"
+        >
 
 
             <!-- ================================================= -->
             <!-- LEFT -->
             <!-- ================================================= -->
 
-            <div class="w-1/2 px-10 py-8 flex flex-col items-center">
+            <div
+                class="w-1/2 px-10 py-8 flex flex-col items-center"
+            >
 
 
+                <!-- ================================================= -->
                 <!-- CROP AREA -->
+                <!-- ================================================= -->
 
                 <div
-                    class="relative w-[150px] h-[150px] rounded-full overflow-hidden bg-[#ff7957]"
+                    class="profile-circle relative w-[150px] h-[150px] rounded-full overflow-hidden bg-[#ff7957] cursor-move"
                 >
 
                     <!-- IMAGE -->
@@ -90,6 +249,13 @@
                         ♙
                     </div>
 
+
+                    <!-- SMALL DECORATION -->
+
+                    <div
+                        class="absolute bottom-3 right-3 w-5 h-5 rounded-full bg-[#fff8ee]/80 pointer-events-none"
+                    ></div>
+
                 </div>
 
 
@@ -98,7 +264,7 @@
 
                 <label
                     for="profileInput"
-                    class="mt-4 w-[105px] h-[20px] rounded-full bg-[#c83232] text-white text-[8px] flex items-center justify-center cursor-pointer hover:opacity-80 transition"
+                    class="picture-button mt-4 w-[105px] h-[20px] rounded-full bg-[#c83232] text-white text-[8px] flex items-center justify-center cursor-pointer"
                 >
                     Change Profile Picture
                 </label>
@@ -138,7 +304,7 @@
                             max="3"
                             step="0.01"
                             value="1"
-                            class="w-full"
+                            class="w-full accent-[#c83232]"
                         >
 
                     </div>
@@ -160,7 +326,7 @@
                             max="180"
                             step="1"
                             value="0"
-                            class="w-full"
+                            class="w-full accent-[#c83232]"
                         >
 
                     </div>
@@ -172,7 +338,7 @@
                     <button
                         type="button"
                         onclick="resetCrop()"
-                        class="mt-3 text-[8px] text-[#c83232] underline"
+                        class="mt-3 text-[8px] text-[#c83232] underline hover:opacity-60 transition"
                     >
                         Reset photo
                     </button>
@@ -198,7 +364,7 @@
                         id="profileName"
                         type="text"
                         placeholder="Type here"
-                        class="w-full h-[22px] rounded-full border border-[#cbb8b8] bg-[#eadada] outline-none px-3 text-[9px]"
+                        class="input-effect w-full h-[22px] rounded-full border border-[#cbb8b8] bg-[#eadada] outline-none px-3 text-[9px]"
                     >
 
                 </div>
@@ -221,7 +387,7 @@
                     <textarea
                         id="profileBio"
                         placeholder="Type here"
-                        class="w-full h-[75px] rounded-xl border border-[#cbb8b8] bg-[#eadada] outline-none px-3 py-2 text-[9px] resize-none"
+                        class="input-effect w-full h-[75px] rounded-xl border border-[#cbb8b8] bg-[#eadada] outline-none px-3 py-2 text-[9px] resize-none"
                     ></textarea>
 
                 </div>
@@ -229,16 +395,34 @@
 
 
                 <!-- ================================================= -->
-                <!-- SAVE -->
+                <!-- BUTTONS -->
                 <!-- ================================================= -->
 
-                <button
-                    type="button"
-                    onclick="saveProfile()"
-                    class="mt-5 w-[85px] h-[20px] rounded-full bg-[#c83232] text-white text-[8px] hover:opacity-80 transition"
-                >
-                    Edit profile
-                </button>
+                <div class="flex justify-center gap-2 mt-5">
+
+
+                    <!-- CANCEL -->
+
+                    <button
+                        type="button"
+                        onclick="cancelEdit()"
+                        class="button-effect w-[75px] h-[20px] rounded-full border border-[#c83232] text-[#c83232] bg-white text-[8px] hover:bg-[#f0dede]"
+                    >
+                        Cancel
+                    </button>
+
+
+                    <!-- SAVE -->
+
+                    <button
+                        type="button"
+                        onclick="saveProfile()"
+                        class="button-effect w-[85px] h-[20px] rounded-full bg-[#c83232] text-white text-[8px]"
+                    >
+                        Edit profile
+                    </button>
+
+                </div>
 
 
             </div>
@@ -247,14 +431,32 @@
 
             <!-- ================================================= -->
             <!-- RIGHT -->
+            <!-- TETAP SAMA -->
             <!-- ================================================= -->
 
             <div
-                class="w-1/2 bg-[#f0dede] flex items-center justify-center"
+                class="w-1/2 bg-[#f0dede] flex items-center justify-center relative overflow-hidden"
             >
 
+
+                <!-- DECORATION -->
+
+                <div
+                    class="float-decoration absolute top-8 right-8 text-[#c83232]/20 text-4xl"
+                >
+                    ✦
+                </div>
+
+
+                <div
+                    class="float-slow absolute bottom-8 left-8 text-[#ff7957]/25 text-3xl"
+                >
+                    ♡
+                </div>
+
+
                 <h1
-                    class="font-serif font-bold text-[#c83232] text-xl text-center leading-tight"
+                    class="font-serif font-bold text-[#c83232] text-xl text-center leading-tight relative z-10"
                 >
                     Update your<br>
                     Profile
@@ -266,110 +468,6 @@
         </div>
 
     </main>
-
-
-
-    <!-- ================================================= -->
-    <!-- SETTINGS MODAL -->
-    <!-- ================================================= -->
-
-    <div
-        id="settingsModal"
-        class="hidden fixed inset-0 z-50 bg-white/70 backdrop-blur-sm items-center justify-center p-5"
-    >
-
-        <div
-            class="w-full max-w-[320px] bg-[#fff8ee] border border-[#e8cfcf] shadow-xl rounded-xl p-6"
-        >
-
-
-            <!-- HEADER -->
-
-            <div class="flex items-center justify-between">
-
-                <h2
-                    class="font-serif font-bold text-[#c83232] text-xl"
-                >
-                    Settings
-                </h2>
-
-
-                <button
-                    type="button"
-                    onclick="closeSettings()"
-                    class="text-[#c83232] text-xl hover:scale-110 transition"
-                >
-                    ×
-                </button>
-
-            </div>
-
-
-
-            <p class="text-[9px] text-gray-500 mt-2">
-                Manage your profile settings.
-            </p>
-
-
-
-            <!-- ================================================= -->
-            <!-- RESET PROFILE -->
-            <!-- ================================================= -->
-
-            <button
-                type="button"
-                onclick="resetProfile()"
-                class="w-full mt-6 px-4 py-3 bg-[#f0dede] rounded-lg text-left hover:bg-[#eadada] transition"
-            >
-
-                <p class="text-xs font-bold text-[#c83232]">
-                    Reset Profile
-                </p>
-
-                <p class="text-[8px] text-gray-500 mt-1">
-                    Delete your name, biodata, and profile picture.
-                </p>
-
-            </button>
-
-
-
-            <!-- ================================================= -->
-            <!-- LOGOUT -->
-            <!-- ================================================= -->
-
-            <button
-                type="button"
-                onclick="logout()"
-                class="w-full mt-3 px-4 py-3 bg-[#c83232] rounded-lg text-left hover:opacity-90 transition"
-            >
-
-                <p class="text-xs font-bold text-white">
-                    Logout
-                </p>
-
-                <p class="text-[8px] text-white/80 mt-1">
-                    Return to the login page.
-                </p>
-
-            </button>
-
-
-
-            <!-- CANCEL -->
-
-            <button
-                type="button"
-                onclick="closeSettings()"
-                class="w-full mt-4 text-[9px] text-[#c83232] hover:underline"
-            >
-                Cancel
-            </button>
-
-
-        </div>
-
-    </div>
 
 
 
@@ -441,7 +539,6 @@
 
         window.addEventListener("load", function () {
 
-
             const savedName =
                 localStorage.getItem("profileName");
 
@@ -463,14 +560,12 @@
             }
 
 
-
             if (savedBio) {
 
                 profileBio.value =
                     savedBio;
 
             }
-
 
 
             if (savedPhoto) {
@@ -586,7 +681,6 @@
         // =================================================
 
         function updateImage() {
-
 
             const cropSize = 150;
 
@@ -753,7 +847,7 @@
 
 
         // =================================================
-        // TOUCH / HP
+        // TOUCH
         // =================================================
 
         cropImage.addEventListener(
@@ -829,7 +923,7 @@
 
 
         // =================================================
-        // RESET PHOTO CROP
+        // RESET PHOTO
         // =================================================
 
         function resetCrop() {
@@ -866,7 +960,6 @@
         // =================================================
 
         function saveProfile() {
-
 
             const name =
                 profileName.value.trim();
@@ -931,6 +1024,7 @@
 
             ctx.beginPath();
 
+
             ctx.arc(
                 size / 2,
                 size / 2,
@@ -939,18 +1033,10 @@
                 Math.PI * 2
             );
 
+
             ctx.closePath();
 
             ctx.clip();
-
-
-
-            ctx.clearRect(
-                0,
-                0,
-                size,
-                size
-            );
 
 
 
@@ -984,21 +1070,9 @@
                 size / cropSize;
 
 
-            const drawX =
-                size / 2 +
-                imageX * canvasScale -
-                (drawWidth * canvasScale) / 2;
-
-
-            const drawY =
-                size / 2 +
-                imageY * canvasScale -
-                (drawHeight * canvasScale) / 2;
-
-
 
             // =================================================
-            // ROTATE
+            // ROTATE + DRAW
             // =================================================
 
             ctx.save();
@@ -1017,6 +1091,7 @@
 
             ctx.drawImage(
                 cropImage,
+
                 -drawWidth * canvasScale / 2 +
                     imageX * canvasScale,
 
@@ -1060,194 +1135,23 @@
         function goToProfile() {
 
             window.location.href =
+                "{{ route('user.home') }}";
+
+        }
+
+
+
+        // =================================================
+        // CANCEL
+        // =================================================
+
+        function cancelEdit() {
+
+            window.location.href =
                 "{{ route('user.profile') }}";
 
         }
 
-
-
-        // =================================================
-        // SETTINGS
-        // =================================================
-
-        function openSettings() {
-
-            const modal =
-                document.getElementById("settingsModal");
-
-
-            modal.classList.remove("hidden");
-
-            modal.classList.add("flex");
-
-        }
-
-
-
-        function closeSettings() {
-
-            const modal =
-                document.getElementById("settingsModal");
-
-
-            modal.classList.add("hidden");
-
-            modal.classList.remove("flex");
-
-        }
-
-
-
-        // =================================================
-        // RESET PROFILE
-        // =================================================
-
-        function resetProfile() {
-
-
-            const confirmReset =
-                confirm(
-                    "Are you sure you want to reset your profile?"
-                );
-
-
-            if (!confirmReset) {
-
-                return;
-
-            }
-
-
-
-            // Hapus data profile
-
-            localStorage.removeItem(
-                "profileName"
-            );
-
-
-            localStorage.removeItem(
-                "profileBio"
-            );
-
-
-            localStorage.removeItem(
-                "profilePhoto"
-            );
-
-
-
-            // Kosongkan form
-
-            profileName.value = "";
-
-            profileBio.value = "";
-
-
-
-            // Reset foto
-
-            cropImage.src = "";
-
-            cropImage.classList.add("hidden");
-
-            profilePlaceholder.classList.remove("hidden");
-
-            cropControls.classList.add("hidden");
-
-
-
-            // Reset input file
-
-            profileInput.value = "";
-
-
-
-            // Tutup settings
-
-            closeSettings();
-
-
-
-            alert(
-                "Your profile has been reset."
-            );
-
-        }
-
-
-
-        // =================================================
-        // LOGOUT
-        // =================================================
-
-        function logout() {
-
-
-            const confirmLogout =
-                confirm(
-                    "Are you sure you want to logout?"
-                );
-
-
-            if (!confirmLogout) {
-
-                return;
-
-            }
-
-
-
-            /*
-             * Logout hanya kembali ke halaman login.
-             *
-             * Profile dan art TIDAK dihapus.
-             */
-
-            window.location.href =
-                "{{ route('login') }}";
-
-        }
-
-
-
-        // =================================================
-        // CLICK OUTSIDE SETTINGS
-        // =================================================
-
-        document
-            .getElementById("settingsModal")
-            .addEventListener(
-                "click",
-                function (event) {
-
-                    if (event.target === this) {
-
-                        closeSettings();
-
-                    }
-
-                }
-            );
-
-
-
-        // =================================================
-        // ESC SETTINGS
-        // =================================================
-
-        document.addEventListener(
-            "keydown",
-            function (event) {
-
-                if (event.key === "Escape") {
-
-                    closeSettings();
-
-                }
-
-            }
-        );
 
     </script>
 
