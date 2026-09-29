@@ -534,21 +534,43 @@
 
 
         // =================================================
-        // LOAD PROFILE
+        // LOAD PROFILE — DARI DATABASE
         // =================================================
+        //
+        // $user dikirim oleh ProfileController@editForm()
+        // lewat FrontendData::profileUser(). Isinya:
+        //
+        //     { name, bio, photo }
+        //
+        // -> name  = kolom `name` di tabel users
+        // -> bio   = kolom `bio`
+        // -> photo = foto_profil, sudah jadi URL
+        //
+        // Efeknya: kolom Name & Bio di form ini langsung terisi
+        // dengan data user yang sedang login.
+        //
+        // CATATAN: jangan menulis nama perintah Blade
+        // (yang diawali tanda "at", seperti at-json atau
+        // at-if) di dalam komentar. Blade tetap
+        // mengompilasinya, jadi tulisan itu bisa bikin
+        // halaman error. Tulis "at-json" saja di komentar.
+        //
+
+        const currentUser = @json($user);
+
 
         window.addEventListener("load", function () {
 
             const savedName =
-                localStorage.getItem("profileName");
+                currentUser ? currentUser.name : null;
 
 
             const savedBio =
-                localStorage.getItem("profileBio");
+                currentUser ? currentUser.bio : null;
 
 
             const savedPhoto =
-                localStorage.getItem("profilePhoto");
+                currentUser ? currentUser.photo : null;
 
 
 
@@ -970,17 +992,22 @@
 
 
 
-            localStorage.setItem(
-                "profileName",
-                name
-            );
-
-
-            localStorage.setItem(
-                "profileBio",
-                bio
-            );
-
+            // Data dummy dari localStorage sudah dihapus.
+            //
+            // TODO: kirim ke database. Contoh:
+            //
+            //     const body = new FormData();
+            //     body.append('name', name);
+            //     body.append('bio', bio);
+            //     body.append('foto_profil', canvasBlob);
+            //
+            //     fetch('{{ route('profile.update') }}', {
+            //         method: 'POST',
+            //         headers: {
+            //             'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            //         },
+            //         body: body
+            //     }).then(() => goToProfile());
 
 
             // Kalau tidak ada foto baru,
@@ -991,7 +1018,7 @@
                 cropImage.classList.contains("hidden")
             ) {
 
-                goToProfile();
+                sendProfile(name, bio, null);
 
                 return;
 
@@ -1112,17 +1139,76 @@
             // SAVE PHOTO
             // =================================================
 
-            const finalPhoto =
-                canvas.toDataURL("image/png");
+            // Data dummy dari localStorage sudah dihapus.
+            // Kirim hasil canvas ke server, contoh:
+            //
+            //     canvas.toBlob(blob => {
+            //         const body = new FormData();
+            //         body.append('name', name);
+            //         body.append('bio', bio);
+            //         body.append('foto_profil', blob);
+            //
+            //         fetch('{{ route('profile.update') }}', {
+            //             method: 'POST',
+            //             headers: {
+            //                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            //             },
+            //             body: body
+            //         }).then(() => goToProfile());
+            //     }, 'image/png');
+
+            canvas.toBlob(function (blob) {
+
+                sendProfile(name, bio, blob);
+
+            }, 'image/png');
+
+        }
 
 
-            localStorage.setItem(
-                "profilePhoto",
-                finalPhoto
-            );
+        // =================================================
+        // KIRIM PROFILE KE SERVER
+        // =================================================
 
+        function sendProfile(name, bio, blob) {
 
-            goToProfile();
+            const body = new FormData();
+
+            body.append('_method', 'PUT');
+            body.append('name', name);
+            body.append('bio', bio);
+
+            if (blob) {
+                body.append('profile_photo', blob, 'profile.png');
+            }
+
+            fetch("{{ route('profile.update') }}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': "{{ csrf_token() }}",
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: body
+            })
+                .then(function (r) {
+                    return r.json().then(function (data) {
+                        return { ok: r.ok, data: data };
+                    });
+                })
+                .then(function (res) {
+
+                    if (!res.ok) {
+                        alert(res.data.message || "Gagal menyimpan profile.");
+                        return;
+                    }
+
+                    goToProfile();
+
+                })
+                .catch(function () {
+                    alert("Gagal menyimpan profile.");
+                });
 
         }
 

@@ -153,13 +153,20 @@
     <div class="p-4">
         <div class="border-t border-[#F6FFEA]/15 pt-4">
             <div class="flex items-center gap-3 px-3 py-3">
+
+                {{-- Data admin yang login, dari tabel users. --}}
                 <div class="w-10 h-10 rounded-full bg-[#FFDE96]
                             flex items-center justify-center
-                            text-[#C93638] font-bold">A</div>
+                            text-[#C93638] font-bold">
+                    {{ \Illuminate\Support\Str::of(auth()->user()?->name ?? 'A')->substr(0, 1)->upper() }}
+                </div>
+
                 <div class="min-w-0">
-                    <p class="font-bold text-sm text-[#F6FFEA]">Administrator</p>
+                    <p class="font-bold text-sm text-[#F6FFEA]">
+                        {{ auth()->user()?->name ?? 'Administrator' }}
+                    </p>
                     <p class="sans text-[10px] text-[#FFDE96] truncate">
-                        admin@gmail.com
+                        {{ auth()->user()?->email ?? '-' }}
                     </p>
                 </div>
             </div>
@@ -314,6 +321,74 @@
             <div id="dashboardArts"
                  class="grid grid-cols-4 gap-5"></div>
 
+
+            <!-- ===================================== -->
+            <!-- LATEST ARTISTS + PENDING ACCOUNTS    -->
+            <!-- =====================================
+                 Dua daftar tambahan di dashboard:
+
+                 1. Latest Artists   -> 4 artist yang paling
+                    baru daftar (dari `artists`, yang isinya
+                    hanya artist yang SUDAH approved).
+                 2. Pending Accounts -> akun yang masih
+                    menunggu persetujuan admin (dari
+                    `pendingUsers` dengan status 'pending').
+
+                 Semua diisi oleh renderDashboard(). -->
+
+            <div class="grid grid-cols-2 gap-8 mt-12">
+
+                <!-- LATEST ARTISTS -->
+                <div>
+                    <div class="flex justify-between items-end mb-5">
+                        <div>
+                            <p class="sans text-xs uppercase tracking-[2px]
+                                      text-[#62C4DA]">
+                                Community
+                            </p>
+                            <h2 class="text-2xl font-bold mt-1 text-[#C93638]">
+                                Latest Artists
+                            </h2>
+                        </div>
+
+                        <button onclick="showPage('artists')"
+                                class="sans text-sm font-bold text-[#62C4DA]
+                                       hover:text-[#C93638] transition">
+                            View all →
+                        </button>
+                    </div>
+
+                    <div id="dashboardArtists"
+                         class="space-y-3"></div>
+                </div>
+
+
+                <!-- PENDING ACCOUNTS -->
+                <div>
+                    <div class="flex justify-between items-end mb-5">
+                        <div>
+                            <p class="sans text-xs uppercase tracking-[2px]
+                                      text-[#62C4DA]">
+                                Verification
+                            </p>
+                            <h2 class="text-2xl font-bold mt-1 text-[#C93638]">
+                                Pending Accounts
+                            </h2>
+                        </div>
+
+                        <button onclick="showPage('pending')"
+                                class="sans text-sm font-bold text-[#62C4DA]
+                                       hover:text-[#C93638] transition">
+                            Review →
+                        </button>
+                    </div>
+
+                    <div id="dashboardPending"
+                         class="space-y-3"></div>
+                </div>
+
+            </div>
+
         </section>
 
 
@@ -333,26 +408,39 @@
                     <h2 class="text-3xl font-bold text-[#C93638]">Arts</h2>
                 </div>
 
-                <div class="flex gap-2">
-                    <button onclick="filterCategory('all')" id="catAll"
+                {{--
+                    Tombol filter kategori dibuat dari database
+                    ($categories), bukan ditulis manual.
+
+                    Kenapa? Supaya daftar kategori di sini sama
+                    persis dengan tabel `kategoris` yang dipakai
+                    user saat mengupload karya. Kalau tombolnya
+                    manual, kategori baru tidak akan muncul.
+
+                    JS: filterCategory(namaKategori)
+                --}}
+                <div id="categoryFilter"
+                     class="flex gap-2 flex-wrap justify-end">
+
+                    <button onclick="filterCategory('all')"
+                            data-category="all"
                             class="category-btn px-5 py-2.5 rounded-full
                                    bg-[#C93638] text-white
                                    sans text-xs font-bold">
                         All
                     </button>
-                    <button onclick="filterCategory('Digital')" id="catDigital"
-                            class="category-btn px-5 py-2.5 rounded-full
-                                   bg-[#F6FFEA] text-[#C93638]
-                                   border border-[#C93638]/15
-                                   sans text-xs font-bold">
-                        Digital
-                    </button>
-                    <button onclick="filterCategory('Traditional')" id="catTraditional"
-                            class="category-btn px-5 py-2.5 rounded-full
-                                   bg-[#FFDE96] text-[#C93638]
-                                   sans text-xs font-bold">
-                        Traditional
-                    </button>
+
+                    @foreach ($categories as $category)
+                        <button onclick="filterCategory(@js($category->nama_kategori))"
+                                data-category="{{ $category->nama_kategori }}"
+                                class="category-btn px-5 py-2.5 rounded-full
+                                       bg-[#F6FFEA] text-[#C93638]
+                                       border border-[#C93638]/15
+                                       sans text-xs font-bold">
+                            {{ $category->nama_kategori }}
+                        </button>
+                    @endforeach
+
                 </div>
             </div>
 
@@ -454,6 +542,11 @@
                     Artwork
                 </h2>
 
+                {{-- Diisi oleh JS: tanggal + jam upload --}}
+                <p id="detailArtDate"
+                   class="sans text-xs text-[#2a1a1c]/40 mt-3">
+                </p>
+
                 <div class="mt-7">
                     <p class="sans text-xs uppercase tracking-[2px]
                               text-[#2a1a1c]/40">
@@ -485,8 +578,6 @@
                             <p id="detailArtistName"
                                class="font-bold group-hover:text-[#62C4DA]
                                       transition"></p>
-                            <p id="detailArtistUsername"
-                               class="sans text-xs text-[#2a1a1c]/50"></p>
                         </div>
 
                     </button>
@@ -542,15 +633,15 @@
                         flex items-center justify-center">
             </div>
 
-            <p id="artistProfileUsername"
-               class="sans text-xs uppercase tracking-[2px]
-                      text-[#62C4DA] mt-4"></p>
-
             <h2 id="artistProfileName"
                 class="text-3xl font-bold mt-1 text-[#C93638]"></h2>
 
             <p id="artistProfileBio"
                class="sans text-sm leading-6 text-[#2a1a1c]/60 mt-4"></p>
+
+            {{-- Diisi oleh JS: tanggal artist daftar --}}
+            <p id="artistProfileJoined"
+               class="sans text-xs text-[#2a1a1c]/40 mt-3"></p>
 
             <div class="mt-8">
                 <p class="sans text-xs uppercase tracking-[2px]
@@ -731,24 +822,48 @@ function getInitialAvatar(nama, size = "md") {
 
 
 /* =====================================================
-   HELPER: GET ARTIST AVATAR HTML
+   FORMAT TANGGAL + JAM
+=====================================================
+   `art.date` dikirim dari server sebagai teks ISO 8601,
+   contoh: "2026-09-29T02:23:55+00:00"
+
+   Fungsi ini mengubahnya jadi tanggal LENGKAP dengan jam,
+   mengikuti bahasa browser user. Contoh hasil:
+       "29 September 2026 at 02.23"
+   Kalau tanggalnya kosong / rusak -> "Unknown date".
 ===================================================== */
 
-function getArtistAvatarHtml(artistName, size = "sm") {
+function formatDateTime(iso) {
 
-    const myName = localStorage.getItem("profileName") || "";
-    const myPhoto = localStorage.getItem("profilePhoto") || "";
+    if (!iso) return "Unknown date";
 
-    const isMe =
-        myName &&
-        myName.toLowerCase() === (artistName || "").toLowerCase();
+    const date = new Date(iso);
 
-    const hasPhoto = myPhoto && myPhoto.trim() !== "";
+    if (isNaN(date.getTime())) return "Unknown date";
+
+    return date.toLocaleString(undefined, {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+}
 
 
-    /* Artist = user login & punya foto → pakai foto */
 
-    if (isMe && hasPhoto) {
+/* =====================================================
+   GET ARTIST AVATAR HTML
+===================================================== */
+
+function getArtistAvatarHtml(artistName, size = "sm", photoUrl = "") {
+
+    const hasPhoto = photoUrl && photoUrl.trim() !== "";
+
+
+    /* Artist punya foto (dari database) → pakai foto */
+
+    if (hasPhoto) {
 
         const sizes = {
             sm: "w-12 h-12",
@@ -757,7 +872,7 @@ function getArtistAvatarHtml(artistName, size = "sm") {
         };
 
         return `
-            <img src="${myPhoto}"
+            <img src="${photoUrl}"
                  alt="${artistName}"
                  class="${sizes[size]} rounded-full object-cover
                         border-2 border-white shadow-md">
@@ -773,212 +888,38 @@ function getArtistAvatarHtml(artistName, size = "sm") {
 
 
 /* =====================================================
-   STATIC ARTS
+   DATA DASHBOARD ADMIN — SUMBERNYA DATABASE
+=====================================================
+   Data dummy (static + localStorage) sudah dihapus.
+
+   Controller sudah mengirim 3 variabel ini:
+       $pendingUsers, $approvedUsers, $rejectedUsers
+
+   Sambungkan di file Blade ini:
+
+       let arts         = [data dari $arts];
+       let artists      = [data dari $artists];
+       let pendingUsers = @json($pendingUsers);
+
+   Bentuk art:
+   { id, title, description, image, artist, artistId, category, date }
+
+   Bentuk artist:
+   { id, name, bio, photo, artworks, arts }
+
+   CATATAN: tidak ada `username`. Project ini tidak memakai
+   username, jadi jangan ditambah lagi.
+
+   Catatan: approve / reject / hapus SEHARUSNYA dikirim ke
+   server (route PATCH/DELETE + form submit atau fetch),
+   bukan diubah langsung di JavaScript.
 ===================================================== */
 
-const staticArts = [
-    { id: 1, title: "Mona Lisa",
-      description: "Probably the most famous painting in the world is Leonardo da Vinci's La Gioconda, better known as Mona Lisa.",
-      image: "{{ asset('images/arts/mona-lisa.jpg') }}",
-      artist: "Leonardo da Vinci", artistId: "leonardo",
-      category: "Traditional", date: "1503-01-01" },
+let arts = @json($artsData);
 
-    { id: 2, title: "The Birth of Venus",
-      description: "Another of the most famous paintings is The Birth of Venus. Botticelli's painting illustrates the myth of the birth of Aphrodite.",
-      image: "{{ asset('images/arts/birth-of-venus.jpg') }}",
-      artist: "Sandro Botticelli", artistId: "botticelli",
-      category: "Traditional", date: "1485-01-01" },
+let artists = @json($artistsData);
 
-    { id: 3, title: "The Creation Of Adam",
-      description: "Michelangelo's fresco The Creation of Adam, which adorns the ceiling of the Sistine Chapel.",
-      image: "{{ asset('images/arts/creation-of-adam.jpg') }}",
-      artist: "Michelangelo", artistId: "michelangelo",
-      category: "Traditional", date: "1512-01-01" },
-
-    { id: 4, title: "The Last Supper",
-      description: "For more than 500 years of its existence, the famous fresco The Last Supper has been restored at least five times.",
-      image: "{{ asset('images/arts/last-supper.jpg') }}",
-      artist: "Leonardo da Vinci", artistId: "leonardo",
-      category: "Traditional", date: "1498-01-01" },
-
-    { id: 5, title: "The Sacred and Profane Love",
-      description: "The current name of the painting was not given by Titian himself, but appeared only two centuries later.",
-      image: "{{ asset('images/arts/sacred-love.jpg') }}",
-      artist: "Titian", artistId: "titian",
-      category: "Traditional", date: "1514-01-01" },
-
-    { id: 6, title: "The Ancient of Days",
-      description: "This popular artwork by William Blake is now in the British Museum, London.",
-      image: "{{ asset('images/arts/ancient-days.jpg') }}",
-      artist: "William Blake", artistId: "blake",
-      category: "Traditional", date: "1794-01-01" },
-
-    { id: 7, title: "Liberty Leading the People",
-      description: "Liberty Leading the People by Eugene Delacroix is one of the best known examples of Romantic painting.",
-      image: "{{ asset('images/arts/liberty-leading.jpg') }}",
-      artist: "Eugène Delacroix", artistId: "delacroix",
-      category: "Traditional", date: "1830-01-01" },
-
-    { id: 8, title: "The Madonna Litta",
-      description: "This masterpiece, a world classic long ago, is kept in the Hermitage in St. Petersburg.",
-      image: "{{ asset('images/arts/madonna-litta.jpg') }}",
-      artist: "Leonardo da Vinci", artistId: "leonardo",
-      category: "Traditional", date: "1490-01-01" },
-
-    { id: 9, title: "Landscape with the Fall of Icarus",
-      description: "This painting, by Dutch artist Pieter Bruegel, is now part of the collection.",
-      image: "{{ asset('images/arts/landscape-icarus.jpg') }}",
-      artist: "Pieter Bruegel", artistId: "bruegel",
-      category: "Traditional", date: "1560-01-01" }
-];
-
-
-
-/* =====================================================
-   STATIC ARTISTS
-===================================================== */
-
-const staticArtists = {
-    leonardo: {
-        name: "Leonardo da Vinci", username: "@leonardodavinci",
-        bio: "Italian Renaissance artist known for some of the most influential artworks in Western art."
-    },
-    botticelli: {
-        name: "Sandro Botticelli", username: "@sandrobotticelli",
-        bio: "Italian Renaissance painter known for elegant mythological and religious compositions."
-    },
-    michelangelo: {
-        name: "Michelangelo", username: "@michelangelo",
-        bio: "Italian Renaissance artist, sculptor, painter and architect."
-    },
-    titian: {
-        name: "Titian", username: "@titian",
-        bio: "Italian Renaissance painter known for his expressive use of color."
-    },
-    blake: {
-        name: "William Blake", username: "@williamblake",
-        bio: "English poet, painter and printmaker whose work combined art and literature."
-    },
-    delacroix: {
-        name: "Eugène Delacroix", username: "@delacroix",
-        bio: "French Romantic artist known for dramatic compositions and expressive color."
-    },
-    bruegel: {
-        name: "Pieter Bruegel", username: "@pieterbruegel",
-        bio: "Dutch Renaissance painter known for detailed landscapes and scenes of everyday life."
-    }
-};
-
-
-
-/* =====================================================
-   USER ARTS
-===================================================== */
-
-let userArts = [];
-try {
-    userArts = JSON.parse(localStorage.getItem("userArts") || "[]");
-    if (!Array.isArray(userArts)) userArts = [];
-} catch (e) { userArts = []; }
-
-
-const profileName = localStorage.getItem("profileName") || "Unknown Artist";
-const profileBio = localStorage.getItem("profileBio") || "CreateTopia artist.";
-
-
-
-/* Convert user arts */
-
-const convertedUserArts = userArts.map((art, index) => {
-    const creator = art.creator || profileName;
-    return {
-        id: "user-" + (art.id !== undefined ? art.id : index),
-        title: art.title || "Untitled",
-        description: art.description || "No description available.",
-        image: art.image || "",
-        artist: creator,
-        artistId: "user-" + creator.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-        category: art.category || "Digital",
-        date: art.date || new Date().toISOString()
-    };
-});
-
-
-
-/* =====================================================
-   ALL ARTS
-===================================================== */
-
-let arts = [...staticArts, ...convertedUserArts];
-
-
-
-/* =====================================================
-   BUILD ARTISTS (pakai inisial, bukan foto)
-===================================================== */
-
-let artists = [];
-
-function buildArtists() {
-
-    const grouped = {};
-
-    arts.forEach(art => {
-
-        if (!art.artistId) return;
-
-        if (!grouped[art.artistId]) {
-            grouped[art.artistId] = {
-                id: art.artistId,
-                name: art.artist || "Unknown Artist",
-                arts: []
-            };
-        }
-
-        grouped[art.artistId].arts.push(art);
-    });
-
-
-    artists = Object.values(grouped).map(artist => {
-
-        let info = staticArtists[artist.id];
-
-        if (!info) {
-            info = {
-                name: artist.name,
-                username: "@" + artist.name.toLowerCase()
-                                .replace(/[^a-z0-9]+/g, ""),
-                bio: profileBio || "CreateTopia artist."
-            };
-        }
-
-        return { ...artist, ...info };
-    });
-}
-
-
-
-/* =====================================================
-   PENDING USERS
-===================================================== */
-
-let pendingUsers = [];
-
-function loadPendingUsers() {
-    try {
-        const data = JSON.parse(
-            localStorage.getItem('pendingUsers') || '[]'
-        );
-        pendingUsers = Array.isArray(data) ? data : [];
-    } catch (e) {
-        pendingUsers = [];
-    }
-}
-
-function savePendingUsers() {
-    localStorage.setItem('pendingUsers',
-        JSON.stringify(pendingUsers));
-}
+let pendingUsers = @json($usersData);
 
 
 
@@ -1033,6 +974,10 @@ function showPage(page) {
         document.getElementById('artsBtn')
             .classList.add('bg-[#62C4DA]', 'text-white');
         currentCategory = 'all';
+
+        /* Tandai tombol "All" sebagai yang aktif */
+        renderCategoryButtons();
+
         renderArts();
     }
 
@@ -1107,6 +1052,9 @@ function renderArts() {
                     <p class="sans text-xs text-[#2a1a1c]/50 mt-2">
                         by ${art.artist}
                     </p>
+                    <p class="sans text-[10px] text-[#2a1a1c]/40 mt-2">
+                        📅 ${formatDateTime(art.date)}
+                    </p>
                 </div>
             </button>`;
     });
@@ -1116,11 +1064,51 @@ function renderArts() {
 
 /* =====================================================
    FILTER CATEGORY
+=====================================================
+   `cat` = "all" atau NAMA kategori dari tabel `kategoris`.
+   Nilai ini sama dengan art.category, jadi pencocokannya
+   memakai nama (bukan id), supaya konsisten dengan
+   FrontendData::art().
+
+   Setelah mengubah filter, jangan lupa panggil
+   renderCategoryButtons() supaya tombol yang aktif
+   kelihatan beda dari yang lain.
 ===================================================== */
 
 function filterCategory(cat) {
+
     currentCategory = cat;
+
+    renderCategoryButtons();
     renderArts();
+}
+
+
+
+/* =====================================================
+   RENDER TOMBOL KATEGORI (tandai yang aktif)
+=====================================================
+   Tombolnya sudah dibuat Blade dari $categories.
+   Fungsi ini hanya mengubah kelas CSS-nya supaya
+   kategori yang sedang dipilih terlihat menonjol.
+===================================================== */
+
+function renderCategoryButtons() {
+
+    const buttons = document.querySelectorAll('#categoryFilter button');
+
+    buttons.forEach(function (button) {
+
+        const isActive = button.dataset.category === currentCategory;
+
+        button.className = isActive
+            ? "category-btn px-5 py-2.5 rounded-full " +
+              "bg-[#C93638] text-white sans text-xs font-bold"
+            : "category-btn px-5 py-2.5 rounded-full " +
+              "bg-[#F6FFEA] text-[#C93638] border " +
+              "border-[#C93638]/15 sans text-xs font-bold";
+
+    });
 }
 
 
@@ -1136,7 +1124,13 @@ function renderArtists() {
 
     artists.forEach(artist => {
 
-        const avatarHtml = getArtistAvatarHtml(artist.name, 'md');
+        /* Argumen ke-3 = URL foto profil.
+           Dulu kosong, jadi kartu selalu cuma menampilkan
+           inisial. Profildnya baru terlihat setelah artist
+           diklik (di modal). Sekarang langsung tampil. */
+        const avatarHtml = getArtistAvatarHtml(
+            artist.name, 'md', artist.photo || ''
+        );
 
         container.innerHTML += `
             <button onclick="openArtist('${artist.id}')"
@@ -1153,9 +1147,6 @@ function renderArtists() {
                         <h3 class="text-xl font-bold mt-1 text-[#C93638]">
                             ${artist.name}
                         </h3>
-                        <p class="sans text-xs text-[#2a1a1c]/50">
-                            ${artist.username}
-                        </p>
                     </div>
                 </div>
 
@@ -1210,9 +1201,177 @@ function renderDashboardArts() {
                     <p class="sans text-xs text-[#2a1a1c]/50 mt-1">
                         ${art.artist}
                     </p>
+                    <p class="sans text-[10px] text-[#2a1a1c]/40 mt-1">
+                        📅 ${formatDateTime(art.date)}
+                    </p>
                 </div>
             </button>`;
     });
+}
+
+
+
+/* =====================================================
+   DASHBOARD — LATEST ARTISTS
+=====================================================
+   4 artist yang paling baru daftar.
+
+   `artists` sudah difilter di server (hanya status
+   'approved'), jadi di sini tidak perlu cek status lagi.
+   Semua artist sudah diurutkan dari yang terbaru oleh
+   AdminController (`->latest()`), tapi kita urutkan ulang
+   saja biar aman kalau nanti urutan datanya berubah.
+===================================================== */
+
+function renderDashboardArtists() {
+
+    const container = document.getElementById('dashboardArtists');
+    container.innerHTML = '';
+
+    const latest = [...artists]
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .slice(0, 4);
+
+
+    if (!latest.length) {
+        container.innerHTML = `
+            <div class="bg-[#F6FFEA] rounded-[25px] p-8 text-center
+                        border border-[#C93638]/10">
+                <p class="text-3xl text-[#62C4DA]">✦</p>
+                <p class="font-bold mt-2 text-[#C93638]">
+                    No artists yet
+                </p>
+            </div>`;
+        return;
+    }
+
+    latest.forEach(artist => {
+
+        /* Argumen ke-3 = foto profil, supaya tidak cuma inisial. */
+        const avatarHtml = getArtistAvatarHtml(
+            artist.name, 'sm', artist.photo || ''
+        );
+
+        container.innerHTML += `
+            <button onclick="openArtist('${artist.id}')"
+                    class="w-full flex items-center gap-4 text-left
+                           bg-[#F6FFEA] rounded-[20px] p-4
+                           card-hover border border-[#C93638]/10">
+
+                ${avatarHtml}
+
+                <div class="min-w-0 flex-1">
+                    <h3 class="font-bold text-[#C93638] truncate">
+                        ${artist.name}
+                    </h3>
+                    <p class="sans text-[10px] text-[#2a1a1c]/50 mt-0.5 truncate">
+                        📅 Daftar ${formatDateTime(artist.date)}
+                    </p>
+                </div>
+
+                <div class="text-right flex-shrink-0">
+                    <p class="font-bold text-[#C93638] text-lg">
+                        ${artist.artworks}
+                    </p>
+                    <p class="sans text-[9px] text-[#2a1a1c]/40">
+                        artworks
+                    </p>
+                </div>
+
+            </button>`;
+    });
+}
+
+
+
+/* =====================================================
+   DASHBOARD — PENDING ACCOUNTS
+=====================================================
+   Akun yang daftar tapi belum disetujui admin.
+   Diambil dari `pendingUsers` dengan status 'pending'.
+
+   Tombolnya langsung memanggil askApprove / askReject
+   supaya admin bisa menyetujui dari dashboard tanpa
+   pindah halaman.
+===================================================== */
+
+function renderDashboardPending() {
+
+    const container = document.getElementById('dashboardPending');
+    container.innerHTML = '';
+
+    const pending = pendingUsers.filter(u => u.status === 'pending');
+
+
+    if (!pending.length) {
+        container.innerHTML = `
+            <div class="bg-[#F6FFEA] rounded-[25px] p-8 text-center
+                        border border-[#C93638]/10">
+                <p class="text-3xl text-[#62C4DA]">✦</p>
+                <p class="font-bold mt-2 text-[#C93638]">
+                    Nothing to review
+                </p>
+                <p class="sans text-xs text-[#2a1a1c]/50 mt-1">
+                    Semua pendaftaran sudah ditinjau.
+                </p>
+            </div>`;
+        return;
+    }
+
+    pending.slice(0, 4).forEach(user => {
+
+        container.innerHTML += `
+            <div class="flex items-center gap-4
+                        bg-[#F6FFEA] rounded-[20px] p-4
+                        border border-[#C93638]/10">
+
+                <div class="w-11 h-11 rounded-full flex-shrink-0
+                            bg-gradient-to-br
+                            from-[#62C4DA] to-[#C93638]
+                            flex items-center justify-center
+                            text-white font-bold">
+                    ${(user.nama || '?').charAt(0).toUpperCase()}
+                </div>
+
+                <div class="min-w-0 flex-1">
+                    <h3 class="font-bold text-[#C93638] truncate">
+                        ${user.nama || 'Unknown'}
+                    </h3>
+                    <p class="sans text-[10px] text-[#62C4DA] truncate">
+                        ${user.email}
+                    </p>
+                    <p class="sans text-[9px] text-[#2a1a1c]/40 mt-0.5">
+                        📅 Daftar ${formatDateTime(user.tanggal)}
+                    </p>
+                </div>
+
+                <div class="flex gap-2 flex-shrink-0">
+                    <button onclick="rejectUser('${user.id}')"
+                            title="Tolak"
+                            class="w-9 h-9 rounded-full
+                                   bg-[#FFDE96] text-[#C93638]
+                                   hover:opacity-80 transition">
+                        ✕
+                    </button>
+                    <button onclick="approveUser('${user.id}')"
+                            title="Setujui"
+                            class="w-9 h-9 rounded-full
+                                   bg-[#C93638] text-white
+                                   hover:opacity-80 transition">
+                        ✓
+                    </button>
+                </div>
+
+            </div>`;
+    });
+
+    /* Kalau pending lebih dari 4, tambahkan baris info. */
+    if (pending.length > 4) {
+        container.innerHTML += `
+            <p class="sans text-xs text-[#2a1a1c]/50 text-center pt-1">
+                + ${pending.length - 4} lainnya menunggu
+            </p>`;
+    }
 }
 
 
@@ -1237,24 +1396,40 @@ function openArt(id) {
         art.description || 'No description.';
 
 
+    /* Tanggal + jam upload */
+
+    document.getElementById('detailArtDate').textContent =
+        '📅 ' + formatDateTime(art.date);
+
+
+    /* Semua elemen modal dikosongkan dulu, supaya tidak ada
+       data artist sebelumnya yang nyangkut kalau artwork ini
+       somehow tidak punya artist. */
+    const detailName = document.getElementById('detailArtistName');
+    const detailAvatar = document.getElementById('detailArtistAvatar');
+    const detailButton = document.getElementById('detailArtArtist');
+
+    detailName.textContent = '';
+    detailAvatar.innerHTML = '';
+    detailButton.onclick = null;
+
+
     if (artist) {
 
-        document.getElementById('detailArtistName').textContent = artist.name;
-        document.getElementById('detailArtistUsername').textContent =
-            artist.username;
+        detailName.textContent = artist.name;
 
-        /* Avatar: foto atau inisial */
+        /* Avatar: pakai foto kalau ada, kalau tidak pakai inisial.
+           CATATAN: element #detailArtistAvatar SELALU ada di HTML
+           dan tidak pernah diganti, jadi kita hanya mengisi
+           isinya (innerHTML). Kalau sebelumnya dipakai
+           outerHTML, element-nya akan hilang / id-nya berubah
+           sehingga avatar tidak muncul lagi saat artist diganti. */
+        detailAvatar.innerHTML =
+            getArtistAvatarHtml(artist.name, 'sm', artist.photo || '');
 
-        document.getElementById('detailArtistAvatar').outerHTML =
-            getArtistAvatarHtml(artist.name, 'sm');
+        /* Klik kartu artist -> buka profil artist tersebut */
 
-        /* Tambah id supaya bisa dipanggil ulang */
-
-        const newAvatar = document.querySelector('#detailArtArtist > div');
-        if (newAvatar) newAvatar.id = 'detailArtistAvatar';
-
-
-        document.getElementById('detailArtArtist').onclick = function () {
+        detailButton.onclick = function () {
             closeModal('artModal');
             openArtist(artist.id);
         };
@@ -1276,24 +1451,33 @@ function openArtist(id) {
 
     currentArtistId = id;
 
-    /* Avatar: foto atau inisial */
+    /* Avatar: pakai foto kalau ada, kalau tidak pakai inisial.
 
+       PENTING: element #artistProfileAvatar SELALU ada di HTML
+       dan tidak pernah diganti — kita hanya mengisi isinya
+       (innerHTML).
+
+       Dulu halaman ini memakai outerHTML, yang berarti element
+       aslinya DIHAPUS lalu diganti element baru tanpa id.
+       Setelah itu document.getElementById('artistProfileAvatar')
+       kadang tidak menemukan apa-apa, sehingga avatar (dan
+       profilnya) tidak muncul lagi begitu artist diganti. */
     const avatarBox = document.getElementById('artistProfileAvatar');
 
-    avatarBox.outerHTML = getArtistAvatarHtml(artist.name, 'lg')
-        .replace('rounded-full',
-                 'rounded-full -mt-14 relative z-10 border-8 border-[#F6FFEA] bg-[#F6FFEA] shadow-lg');
-
-    /* Fix id lagi */
-
-    const newAvatar = document.querySelector('#artistModal .px-8 > div:first-child');
-    if (newAvatar) newAvatar.id = 'artistProfileAvatar';
+    avatarBox.innerHTML =
+        getArtistAvatarHtml(artist.name, 'lg', artist.photo || '');
 
 
     document.getElementById('artistProfileName').textContent = artist.name;
-    document.getElementById('artistProfileUsername').textContent =
-        artist.username;
     document.getElementById('artistProfileBio').textContent = artist.bio;
+
+    /* Tanggal daftar artist */
+
+    const joinedBox = document.getElementById('artistProfileJoined');
+
+    if (joinedBox) {
+        joinedBox.textContent = '📅 ' + formatDateTime(artist.date);
+    }
 
     const works = document.getElementById('artistWorks');
     works.innerHTML = '';
@@ -1358,48 +1542,43 @@ function askDeleteArtist() {
 
 function confirmDelete() {
 
-    if (deleteType === 'art') {
+    const url = deleteType === 'art'
+        ? `{{ url('/admin/arts') }}/${deleteId}`
+        : `{{ url('/admin/users') }}/${deleteId}`;
 
-        arts = arts.filter(a => String(a.id) !== String(deleteId));
-
-    } else if (deleteType === 'artist') {
-
-        arts = arts.filter(a => a.artistId !== deleteId);
-
-        if (String(deleteId).startsWith('user-')) {
-
-            try {
-
-                let userArtsData = JSON.parse(
-                    localStorage.getItem('userArts') || '[]'
-                );
-
-                const creatorName = artists.find(
-                    a => a.id === deleteId
-                )?.name;
-
-                if (creatorName) {
-
-                    userArtsData = userArtsData.filter(
-                        u => (u.creator || profileName) !== creatorName
-                    );
-
-                    localStorage.setItem('userArts',
-                        JSON.stringify(userArtsData));
-                }
-
-            } catch (e) {}
+    fetch(url, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': "{{ csrf_token() }}",
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
         }
-    }
+    })
+        .then(r => r.json().then(data => ({ ok: r.ok, data })))
+        .then(({ ok, data }) => {
 
-    closeModal('deleteModal');
+            if (!ok) {
+                alert(data.message || 'Gagal hapus.');
+                return;
+            }
 
-    currentArtId = null;
-    currentArtistId = null;
-    deleteType = null;
-    deleteId = null;
+            if (deleteType === 'art') {
+                arts = arts.filter(a => String(a.id) !== String(deleteId));
+            } else {
+                arts = arts.filter(a => String(a.artistId) !== String(deleteId));
+                artists = artists.filter(a => String(a.id) !== String(deleteId));
+                pendingUsers = pendingUsers.filter(u => String(u.id) !== String(deleteId));
+            }
 
-    refreshAll();
+            closeModal('deleteModal');
+
+            currentArtId = null;
+            currentArtistId = null;
+            deleteType = null;
+            deleteId = null;
+
+            refreshAll();
+        });
 }
 
 
@@ -1514,21 +1693,43 @@ function renderPending() {
 
 /* =====================================================
    APPROVE / REJECT
+   Catatan: ini hanya mengubah tampilan. Kirim PATCH ke
+   server (route admin.users.approve / admin.users.reject),
+   lalu reload halaman supaya data kembali dari database.
 ===================================================== */
 
 function approveUser(userId) {
 
-    const user = pendingUsers.find(u => u.id === userId);
+    const user = pendingUsers.find(
+        u => String(u.id) === String(userId)
+    );
     if (!user) return;
 
-    user.status = 'approved';
-    user.approvedAt = new Date().toISOString();
+    fetch(`{{ url('/admin/users') }}/${userId}/approve`, {
+        method: 'PATCH',
+        headers: {
+            'X-CSRF-TOKEN': "{{ csrf_token() }}",
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+        .then(r => r.json().then(data => ({ ok: r.ok, data })))
+        .then(({ ok, data }) => {
 
-    savePendingUsers();
-    renderPending();
-    updateStatistics();
+            if (!ok) {
+                alert(data.message || 'Gagal approve.');
+                return;
+            }
 
-    alert(`✓ ${user.nama} berhasil di-approve.`);
+            user.status = 'approved';
+
+            /* refreshAll() supaya semua bagian ikut ter-update:
+               daftar pending, badge, statistik, dan dua daftar
+               baru di dashboard (Latest Artists / Pending). */
+            refreshAll();
+
+            alert(`✓ ${user.nama} berhasil di-approve.`);
+        });
 }
 
 
@@ -1541,7 +1742,9 @@ function rejectUser(userId) {
 
 function confirmReject() {
 
-    const user = pendingUsers.find(u => u.id === currentPendingId);
+    const user = pendingUsers.find(
+        u => String(u.id) === String(currentPendingId)
+    );
     if (!user) return;
 
     const reason =
@@ -1552,17 +1755,32 @@ function confirmReject() {
         return;
     }
 
-    user.status = 'rejected';
-    user.rejectionReason = reason;
-    user.rejectedAt = new Date().toISOString();
+    fetch(`{{ url('/admin/users') }}/${currentPendingId}/reject`, {
+        method: 'PATCH',
+        headers: {
+            'X-CSRF-TOKEN': "{{ csrf_token() }}",
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ reason: reason })
+    })
+        .then(r => r.json().then(data => ({ ok: r.ok, data })))
+        .then(({ ok, data }) => {
 
-    savePendingUsers();
+            if (!ok) {
+                alert(data.message || 'Gagal tolak.');
+                return;
+            }
 
-    closeModal('rejectModal');
-    renderPending();
-    updateStatistics();
+            user.status = 'rejected';
+            user.rejectionReason = reason;
 
-    alert(`✕ ${user.nama} ditolak.`);
+            closeModal('rejectModal');
+            /* Sama seperti approve: update semua bagian. */
+            refreshAll();
+
+            alert(`✕ ${user.nama} ditolak.`);
+        });
 }
 
 
@@ -1646,6 +1864,9 @@ function searchData() {
                         <p class="sans text-xs text-[#2a1a1c]/50 mt-2">
                             by ${art.artist}
                         </p>
+                        <p class="sans text-[10px] text-[#2a1a1c]/40 mt-2">
+                            📅 ${formatDateTime(art.date)}
+                        </p>
                     </div>
                 </button>`;
         });
@@ -1667,14 +1888,17 @@ function searchData() {
         const container = document.getElementById('artistsContainer');
         container.innerHTML = '';
 
+        /* Pencarian hanya berdasarkan nama (tidak ada username). */
         const result = artists.filter(a =>
-            a.name.toLowerCase().includes(keyword) ||
-            a.username.toLowerCase().includes(keyword)
+            a.name.toLowerCase().includes(keyword)
         );
 
         result.forEach(artist => {
 
-            const avatarHtml = getArtistAvatarHtml(artist.name, 'md');
+            /* Sama seperti di atas: ikut kirim foto profil. */
+            const avatarHtml = getArtistAvatarHtml(
+                artist.name, 'md', artist.photo || ''
+            );
 
             container.innerHTML += `
                 <button onclick="openArtist('${artist.id}')"
@@ -1688,9 +1912,6 @@ function searchData() {
                             <h3 class="text-xl font-bold mt-1 text-[#C93638]">
                                 ${artist.name}
                             </h3>
-                            <p class="sans text-xs text-[#2a1a1c]/50">
-                                ${artist.username}
-                            </p>
                         </div>
                     </div>
                     <div class="border-t border-[#C93638]/10 mt-5 pt-4
@@ -1737,8 +1958,9 @@ function closeModal(id) {
 ===================================================== */
 
 function refreshAll() {
-    buildArtists();
     renderDashboardArts();
+    renderDashboardArtists();
+    renderDashboardPending();
     renderArts();
     renderArtists();
     renderPending();
@@ -1764,7 +1986,10 @@ document.addEventListener('keydown', function (e) {
    INITIAL
 ===================================================== */
 
-loadPendingUsers();
+/* Data sudah dimuat dari database (lihat blok
+   "DATA DASHBOARD ADMIN" di atas) — tidak ada
+   localStorage / dummy lagi. */
+
 refreshAll();
 
 </script>

@@ -584,44 +584,36 @@
     <script>
 
         /* =====================================================
-           AMBIL EMAIL DARI URL
+           DATA USER — SUMBERNYA DATABASE
+        =====================================================
+           Versi sebelumnya membaca user dari
+           localStorage.pendingUsers. Itu sudah dihapus.
+
+           Untuk mengambil data dari database, kirim user-nya
+           dari controller, contoh di AuthController@pending():
+
+               return view('pending', [
+                   'pendingUser' => auth()->user(),
+               ]);
+
+           lalu di file Blade ini pakai:
+
+               const currentUser = @json(auth()->user());
+
+           Jika user belum login (baru daftar, belum masuk),
+           ambil dari session, contoh:
+
+               @if (session('pending_email'))
+                   const currentUser = {
+                       nama: @json(session('pending_email')),
+                       email: @json(session('pending_email'))
+                   };
+               @else
+                   const currentUser = null;
+               @endif
         ===================================================== */
 
-        const params =
-            new URLSearchParams(window.location.search);
-
-        const emailFromUrl =
-            params.get('email');
-
-
-
-        /* =====================================================
-           CARI DATA USER DI localStorage.pendingUsers
-        ===================================================== */
-
-        function findPendingUser(email) {
-
-            try {
-
-                const data =
-                    JSON.parse(
-                        localStorage.getItem('pendingUsers') || '[]'
-                    );
-
-                if (!Array.isArray(data)) return null;
-
-                return data.find(u =>
-                    u.email &&
-                    u.email.toLowerCase() === email.toLowerCase()
-                ) || null;
-
-            } catch (e) {
-
-                return null;
-
-            }
-
-        }
+        const currentUser = @json($pendingUser);
 
 
 
@@ -631,20 +623,17 @@
 
         function showUserInfo() {
 
-            const user =
-                emailFromUrl
-                    ? findPendingUser(emailFromUrl)
-                    : null;
+            const user = currentUser;
 
 
             /* -----------------------------------------
-               KALAU KETEMU
+               KALAU ADA DATA
             ----------------------------------------- */
 
             if (user) {
 
                 document.getElementById('userName')
-                    .textContent = user.nama || 'Artist';
+                    .textContent = user.nama || user.name || 'Artist';
 
 
                 document.getElementById('userEmail')

@@ -20,7 +20,6 @@
             font-family: Georgia, serif;
         }
 
-
         /* =========================
            FLOATING
         ========================= */
@@ -43,7 +42,6 @@
             50%      { transform: translateY(-7px) rotate(5deg); }
         }
 
-
         /* =========================
            SECTION
         ========================= */
@@ -57,7 +55,6 @@
             to   { opacity: 1; transform: translateY(0); }
         }
 
-
         /* =========================
            ART CARD
         ========================= */
@@ -65,17 +62,19 @@
         .art-card {
             transition: transform .3s ease, box-shadow .3s ease;
         }
+
         .art-card:hover {
             transform: translateY(-7px);
             box-shadow: 0 15px 28px rgba(91, 68, 91, .15);
         }
+
         .art-card img {
             transition: transform .5s ease;
         }
+
         .art-card:hover img {
             transform: scale(1.08);
         }
-
 
         /* =========================
            ARTIST CARD
@@ -84,6 +83,7 @@
         .artist-card {
             transition: transform .3s ease, box-shadow .3s ease;
         }
+
         .artist-card:hover {
             transform: translateY(-7px);
             box-shadow: 0 15px 30px rgba(91, 68, 91, .15);
@@ -92,10 +92,10 @@
         .artist-photo {
             transition: transform .4s ease;
         }
+
         .artist-card:hover .artist-photo {
             transform: scale(1.07);
         }
-
 
         /* =========================
            DETAIL
@@ -108,27 +108,39 @@
         .detail-arrow {
             transition: transform .2s ease, background .2s ease, color .2s ease;
         }
+
         .detail-arrow:hover {
             transform: translateY(-50%) scale(1.12);
         }
-
 
         /* =========================
            MODAL
         ========================= */
 
-        .modal-bg { animation: modalFade .2s ease; }
-        .modal-box { animation: modalPop .3s ease; }
+        .modal-bg {
+            animation: modalFade .2s ease;
+        }
+
+        .modal-box {
+            animation: modalPop .3s ease;
+        }
 
         @keyframes modalFade {
             from { opacity: 0; }
             to   { opacity: 1; }
         }
-        @keyframes modalPop {
-            from { opacity: 0; transform: translateY(20px) scale(.96); }
-            to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
 
+        @keyframes modalPop {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(.96);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
 
         /* =========================
            CYAN LINE
@@ -141,7 +153,6 @@
             border-radius: 999px;
         }
 
-
         /* =========================
            CAROUSEL
         ========================= */
@@ -149,7 +160,6 @@
         .carousel-track {
             transition: transform .45s ease;
         }
-
 
         /* =========================
            DECORATION
@@ -169,7 +179,6 @@
             border: 4px solid #72ccd2;
         }
 
-
         /* =========================
            AVATAR INITIAL
         ========================= */
@@ -183,13 +192,14 @@
             font-family: Georgia, serif;
         }
 
-
         /* =========================
            MOBILE DETAIL
         ========================= */
 
         @media (max-width: 767px) {
-            .detail-modal-box { height: 90vh; }
+            .detail-modal-box {
+                height: 90vh;
+            }
         }
 
     </style>
@@ -240,7 +250,6 @@
     </nav>
 
 
-
     <!-- =================================================
          BANNER
     ================================================= -->
@@ -248,7 +257,9 @@
     <div class="relative">
 
         <div class="absolute left-[8%] -top-4 dot float-fast opacity-80"></div>
-        <div class="absolute right-[9%] -top-5 circle-decoration float-slow opacity-70"></div>
+
+        <div class="absolute right-[9%] -top-5 circle-decoration
+                    float-slow opacity-70"></div>
 
         <a href="{{ route('home') }}"
            class="block w-[80%] mx-auto h-[220px] bg-[#ffdd9a]
@@ -265,7 +276,6 @@
         </a>
 
     </div>
-
 
 
     <!-- =================================================
@@ -288,24 +298,29 @@
     </section>
 
 
-
     <!-- =================================================
          NEWEST ARTS
     ================================================= -->
 
     <section class="relative mt-12 px-6 md:px-12 lg:px-16 pb-10 section-card">
 
-        <div class="absolute right-[8%] top-0 text-2xl float-slow opacity-50">✦</div>
+        <div class="absolute right-[8%] top-0 text-2xl
+                    float-slow opacity-50">
+            ✦
+        </div>
 
         <div class="flex items-center justify-between mb-4">
 
             <div>
+
                 <h2 class="text-[#ffd98e] text-2xl font-bold">
                     Newest Arts
                 </h2>
+
                 <p class="text-[9px] text-gray-400 mt-1">
                     Freshly added artworks from CreateTopia
                 </p>
+
             </div>
 
             <a href="{{ route('arts') }}"
@@ -318,23 +333,95 @@
 
         <div class="cyan-line mb-6"></div>
 
+
         <div id="newestArts"
              class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        </div>
 
-        <div id="emptyArts" class="hidden text-center py-10">
-            <p class="text-[10px] text-gray-400">No artworks yet.</p>
+            @forelse($newestArts as $index => $art)
+
+                <button type="button"
+                        onclick="openArtModal({{ $index }})"
+                        class="art-card text-left bg-white
+                               border border-gray-200 rounded-xl
+                               overflow-hidden
+                               shadow-[0_3px_8px_rgba(0,0,0,.10)]
+                               group">
+
+                    <div class="h-[145px] overflow-hidden
+                                bg-[#f5eeee] relative">
+
+                        <img src="{{ asset('storage/' . $art->file_gambar) }}"
+                             alt="{{ $art->judul }}"
+                             class="w-full h-full object-cover">
+
+                        <span class="absolute top-3 right-3 text-[7px]
+                                     px-2 py-1 rounded-full bg-white/90
+                                     text-[#c83232] font-bold">
+
+                            {{ $art->kategori->nama_kategori ?? 'Uncategorized' }}
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="p-3">
+
+                        <h3 class="text-[11px] font-bold
+                                   text-gray-800 truncate">
+
+                            {{ $art->judul }}
+
+                        </h3>
+
+                        <p class="text-[8px] text-gray-400 mt-1 truncate">
+
+                            {{ $art->user->name ?? 'Unknown Artist' }}
+
+                        </p>
+
+                        <div class="flex justify-between items-center mt-3">
+
+                            <span class="text-[7px] text-gray-400">
+
+                                {{ $art->created_at->format('M d, Y') }}
+
+                            </span>
+
+                            <span class="text-[#72ccd2] text-xs
+                                         group-hover:translate-x-1 transition">
+                                →
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </button>
+
+            @empty
+
+                <div class="col-span-full text-center py-10">
+
+                    <p class="text-[10px] text-gray-400">
+                        No artworks yet.
+                    </p>
+
+                </div>
+
+            @endforelse
+
         </div>
 
     </section>
-
 
 
     <!-- =================================================
          MOST UPLOADED ARTISTS
     ================================================= -->
 
-    <section class="relative mt-2 px-6 md:px-12 lg:px-16 pb-16 section-card">
+    <section class="relative mt-2 px-6 md:px-12 lg:px-16
+                    pb-16 section-card">
 
         <div class="absolute left-[5%] top-5 text-xl
                     text-[#ffd98e] opacity-60 float-fast">
@@ -344,28 +431,39 @@
         <div class="flex items-center justify-between mb-4">
 
             <div>
+
                 <h2 class="text-[#ffd98e] text-2xl font-bold">
                     Most Uploaded Artists
                 </h2>
+
                 <p class="text-[9px] text-gray-400 mt-1">
                     Artists with the most artworks
                 </p>
+
             </div>
 
             <div class="flex gap-2">
 
                 <button onclick="previousArtist()"
-                        class="w-7 h-7 rounded-full border border-[#72ccd2]
+                        class="w-7 h-7 rounded-full border
+                               border-[#72ccd2]
                                text-[#72ccd2] bg-white
-                               hover:bg-[#72ccd2] hover:text-white
+                               hover:bg-[#72ccd2]
+                               hover:text-white
                                hover:scale-110 transition">
+
                     ←
+
                 </button>
 
                 <button onclick="nextArtist()"
-                        class="w-7 h-7 rounded-full bg-[#72ccd2] text-white
-                               hover:bg-[#c83232] hover:scale-110 transition">
+                        class="w-7 h-7 rounded-full
+                               bg-[#72ccd2] text-white
+                               hover:bg-[#c83232]
+                               hover:scale-110 transition">
+
                     →
+
                 </button>
 
             </div>
@@ -374,15 +472,154 @@
 
         <div class="cyan-line mb-6"></div>
 
+
         <div class="overflow-hidden rounded-xl">
-            <div id="artistTrack" class="carousel-track flex gap-5"></div>
+
+            <div id="artistTrack"
+                 class="carousel-track flex gap-5">
+
+                @forelse($artists as $artist)
+
+                    <a href="{{ url('/artist') }}/{{ $artist->id_user }}"
+                       class="artist-card flex-shrink-0
+                              w-[220px] md:w-[260px]
+                              bg-[#fffaf4]
+                              border border-gray-200
+                              rounded-2xl p-5 text-center
+                              shadow-[0_3px_8px_rgba(0,0,0,.08)]
+                              block relative overflow-hidden group">
+
+
+                        <!-- BACK DECORATION -->
+
+                        <div class="absolute -right-8 -top-8
+                                    w-24 h-24 rounded-full
+                                    bg-[#ffdd9a] opacity-40
+                                    group-hover:scale-125
+                                    transition duration-500">
+                        </div>
+
+                        <div class="absolute -left-5 bottom-4
+                                    w-10 h-10 rounded-full
+                                    border-4 border-[#72ccd2]
+                                    opacity-30
+                                    group-hover:rotate-45
+                                    transition duration-500">
+                        </div>
+
+
+                        <!-- PHOTO -->
+
+                        <div class="relative flex justify-center z-10">
+
+                            <div class="absolute w-24 h-24 rounded-full
+                                        bg-[#72ccd2] opacity-20
+                                        group-hover:scale-110
+                                        transition duration-500">
+                            </div>
+
+
+                            @if($artist->profile_photo)
+
+                                <img src="{{ asset('storage/' . $artist->profile_photo) }}"
+                                     alt="{{ $artist->name }}"
+                                     class="artist-photo relative
+                                            w-20 h-20 rounded-full
+                                            object-cover
+                                            border-4 border-white
+                                            shadow-md">
+
+                            @else
+
+                                <div class="artist-photo relative
+                                            w-20 h-20 rounded-full
+                                            border-4 border-white
+                                            shadow-md
+                                            avatar-initial"
+                                     style="background:
+                                     linear-gradient(135deg,
+                                     #62C4DA, #C93638);">
+
+                                    {{ strtoupper(substr($artist->name, 0, 1)) }}
+
+                                </div>
+
+                            @endif
+
+                        </div>
+
+
+                        <!-- NAME -->
+
+                        <h3 class="relative z-10
+                                   text-sm font-bold text-gray-800
+                                   mt-4 group-hover:text-[#c83232]
+                                   transition">
+
+                            {{ $artist->name }}
+
+                        </h3>
+
+
+
+
+                        <!-- COUNT -->
+
+                        <div class="relative z-10 inline-flex mt-3
+                                    px-3 py-1 rounded-full
+                                    bg-[#e9f7f8]
+                                    text-[#5eb5bf]
+                                    text-[8px] font-bold
+                                    group-hover:bg-[#72ccd2]
+                                    group-hover:text-white transition">
+
+                            {{ $artist->karyas_count }}
+
+                            artwork{{ $artist->karyas_count != 1 ? 's' : '' }}
+
+                        </div>
+
+
+                        <!-- BIO -->
+
+                        <p class="relative z-10
+                                  text-[8px] text-gray-400
+                                  leading-4 mt-3 line-clamp-2">
+
+                            {{ $artist->bio ?? 'CreateTopia artist.' }}
+
+                        </p>
+
+
+                        <!-- VIEW -->
+
+                        <div class="relative z-10 mt-4
+                                    text-[8px] font-bold
+                                    text-[#72ccd2]
+                                    group-hover:text-[#c83232]
+                                    group-hover:translate-x-1 transition">
+
+                            View Artist →
+
+                        </div>
+
+                    </a>
+
+                @empty
+
+                    <p class="text-[10px] text-gray-400 py-10">
+                        No artists yet.
+                    </p>
+
+                @endforelse
+
+            </div>
+
         </div>
 
     </section>
 
-
 </div>
-
 
 
 <!-- =====================================================
@@ -390,51 +627,72 @@
 ===================================================== -->
 
 <div id="artModal"
-     class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm
-            p-3 md:p-6 items-center justify-center modal-bg">
+     class="hidden fixed inset-0 z-50 bg-black/50
+            backdrop-blur-sm p-3 md:p-6
+            items-center justify-center modal-bg">
 
     <div class="detail-modal-box relative w-full max-w-[1150px]
                 h-[90vh] md:h-[620px] bg-white rounded-xl
                 overflow-hidden shadow-2xl modal-box">
 
+
         <!-- TOP -->
+
         <div class="absolute top-0 left-0 w-full h-[20px]
-                    bg-gradient-to-r from-[#72ccd2] via-[#ffdd9a] to-[#ce3037]
-                    z-30"></div>
+                    bg-gradient-to-r from-[#72ccd2]
+                    via-[#ffdd9a] to-[#ce3037]
+                    z-30">
+        </div>
+
 
         <!-- BOTTOM -->
+
         <div class="absolute bottom-0 left-0 w-full h-[20px]
-                    bg-gradient-to-r from-[#ce3037] via-[#ffdd9a] to-[#72ccd2]
-                    z-30"></div>
+                    bg-gradient-to-r from-[#ce3037]
+                    via-[#ffdd9a] to-[#72ccd2]
+                    z-30">
+        </div>
+
 
         <!-- CLOSE -->
-        <button onclick="closeArtModal()"
-                class="absolute z-40 right-5 top-7 w-9 h-9 rounded-full
-                       bg-white shadow-md text-[#d84955] text-lg
-                       hover:bg-[#d84955] hover:text-white
-                       hover:scale-110 transition">
-            ×
-        </button>
 
+        <button onclick="closeArtModal()"
+                class="absolute z-40 right-5 top-7
+                       w-9 h-9 rounded-full
+                       bg-white shadow-md
+                       text-[#d84955] text-lg
+                       hover:bg-[#d84955]
+                       hover:text-white
+                       hover:scale-110 transition">
+
+            ×
+
+        </button>
 
 
         <div class="w-full h-full flex flex-col md:flex-row
                     pt-[20px] pb-[20px]">
 
+
             <!-- LEFT -->
+
             <div class="w-full md:w-[48%] h-[55%] md:h-full
                         bg-[#fffaf4] p-7 md:p-12
                         flex flex-col justify-between
                         relative overflow-hidden">
 
-                <div class="absolute w-24 h-24 rounded-full
-                            bg-[#ffdd9a] opacity-30 -left-10 -top-10
-                            float-slow"></div>
 
-                <div class="absolute text-[#72ccd2] text-xl
-                            right-8 top-16 opacity-40 float-fast">
+                <div class="absolute w-24 h-24 rounded-full
+                            bg-[#ffdd9a] opacity-30
+                            -left-10 -top-10 float-slow">
+                </div>
+
+                <div class="absolute text-[#72ccd2]
+                            text-xl right-8 top-16
+                            opacity-40 float-fast">
                     ✦
                 </div>
+
 
                 <div class="relative z-10">
 
@@ -445,27 +703,29 @@
 
                     <h2 id="modalTitle"
                         class="welcome-font text-[#d84955]
-                               text-3xl md:text-4xl font-bold
-                               mt-3 leading-tight">
+                               text-3xl md:text-4xl
+                               font-bold mt-3 leading-tight">
                     </h2>
 
                     <p id="modalDescription"
-                       class="text-[10px] md:text-[11px] leading-5
-                              text-[#d36c60] mt-6 max-w-[390px]
+                       class="text-[10px] md:text-[11px]
+                              leading-5 text-[#d36c60]
+                              mt-6 max-w-[390px]
                               max-h-[150px] overflow-y-auto">
                     </p>
 
                     <span id="modalCategory"
                           class="inline-block mt-5 px-4 py-1.5
                                  rounded-full bg-[#e9f7f8]
-                                 text-[#62b9c4] text-[8px] font-medium">
+                                 text-[#62b9c4]
+                                 text-[8px] font-medium">
                     </span>
 
                 </div>
 
 
-
                 <!-- ARTIST -->
+
                 <div class="relative z-10">
 
                     <p id="modalDate"
@@ -473,14 +733,17 @@
                     </p>
 
                     <button onclick="openArtistFromArt()"
-                            class="flex items-center gap-3 text-left
-                                   group hover:translate-x-1 transition">
+                            class="flex items-center gap-3
+                                   text-left group
+                                   hover:translate-x-1 transition">
 
-                        <!-- AVATAR CONTAINER — di-render JS -->
                         <div id="modalArtistAvatar"
-                             class="w-10 h-10 rounded-full overflow-hidden
-                                    border-2 border-white shadow-md
-                                    group-hover:scale-110 transition
+                             class="w-10 h-10 rounded-full
+                                    overflow-hidden
+                                    border-2 border-white
+                                    shadow-md
+                                    group-hover:scale-110
+                                    transition
                                     flex items-center justify-center">
                         </div>
 
@@ -505,13 +768,16 @@
             </div>
 
 
-
             <!-- RIGHT -->
+
             <div class="w-full md:w-[52%] h-[45%] md:h-full
                         bg-[#f5eeee] relative overflow-hidden">
 
-                <img id="modalImage" src="" alt="Artwork"
+                <img id="modalImage"
+                     src=""
+                     alt="Artwork"
                      class="detail-image w-full h-full object-cover">
+
 
                 <div class="absolute inset-0
                             bg-gradient-to-r from-black/5
@@ -519,29 +785,51 @@
                             pointer-events-none">
                 </div>
 
+
                 <!-- PREVIOUS -->
-                <button id="modalPrev" onclick="previousModalArt()"
-                        class="detail-arrow hidden absolute left-4 top-1/2
-                               -translate-y-1/2 w-11 h-11 rounded-full
-                               bg-white text-[#d84955] text-xl shadow-lg
-                               hover:bg-[#d84955] hover:text-white z-20">
+
+                <button id="modalPrev"
+                        onclick="previousModalArt()"
+                        class="detail-arrow hidden
+                               absolute left-4 top-1/2
+                               -translate-y-1/2
+                               w-11 h-11 rounded-full
+                               bg-white text-[#d84955]
+                               text-xl shadow-lg
+                               hover:bg-[#d84955]
+                               hover:text-white z-20">
+
                     ←
+
                 </button>
+
 
                 <!-- NEXT -->
-                <button id="modalNext" onclick="nextModalArt()"
-                        class="detail-arrow hidden absolute right-4 top-1/2
-                               -translate-y-1/2 w-11 h-11 rounded-full
-                               bg-white text-[#d84955] text-xl shadow-lg
-                               hover:bg-[#d84955] hover:text-white z-20">
+
+                <button id="modalNext"
+                        onclick="nextModalArt()"
+                        class="detail-arrow hidden
+                               absolute right-4 top-1/2
+                               -translate-y-1/2
+                               w-11 h-11 rounded-full
+                               bg-white text-[#d84955]
+                               text-xl shadow-lg
+                               hover:bg-[#d84955]
+                               hover:text-white z-20">
+
                     →
+
                 </button>
 
+
                 <!-- COUNTER -->
+
                 <div id="modalCounter"
-                     class="absolute bottom-5 right-5 bg-white/90
-                            backdrop-blur-sm px-3 py-1 rounded-full
-                            text-[8px] text-[#d84955] shadow">
+                     class="absolute bottom-5 right-5
+                            bg-white/90 backdrop-blur-sm
+                            px-3 py-1 rounded-full
+                            text-[8px] text-[#d84955]
+                            shadow">
                 </div>
 
             </div>
@@ -553,533 +841,71 @@
 </div>
 
 
-
 <script>
 
 /* =====================================================
-   HELPER: INITIAL AVATAR (nama → inisial + gradient)
+   DATA DARI DATABASE
+=====================================================
+   $artsData dikirim oleh HomeController@index() lewat
+   FrontendData::arts(), jadi di sini TIDAK PERLU tahu
+   nama kolom aslinya (judul, file_gambar, ...).
+
+   Bentuk tiap item:
+   { id, title, description, image,
+     artist, artistId, artistPhoto, category, date }
+
+   PENTING: urutan item harus sama dengan $arts (model),
+   karena index kartu yang ditulis di Blade
+   (openArtModal dengan nomor urut) dipakai untuk membuka
+   modal karya yang sama.
 ===================================================== */
 
-function getInitialAvatar(nama, size = "md") {
-
-    const safeName = (nama || "?").trim();
-    const initial = safeName.charAt(0).toUpperCase() || "?";
-
-    const gradients = [
-        'linear-gradient(135deg, #62C4DA, #C93638)',
-        'linear-gradient(135deg, #FFDE96, #FA855A)',
-        'linear-gradient(135deg, #C93638, #62C4DA)',
-        'linear-gradient(135deg, #FA855A, #FFDE96)',
-        'linear-gradient(135deg, #62C4DA, #FFDE96)'
-    ];
-
-    const hash = safeName.split("")
-        .reduce((acc, c) => acc + c.charCodeAt(0), 0);
-
-    const bg = gradients[hash % gradients.length];
-
-
-    /* Size preset */
-
-    const sizes = {
-        sm: { w: "w-10 h-10", font: "0.9rem" },
-        md: { w: "w-20 h-20", font: "1.5rem" },
-        lg: { w: "w-24 h-24", font: "2rem" }
-    };
-
-    const s = sizes[size] || sizes.md;
-
-
-    return `
-        <div class="${s.w} rounded-full
-                    avatar-initial
-                    border-2 border-white shadow-md"
-             style="background: ${bg}; font-size: ${s.font};">
-            ${initial}
-        </div>
-    `;
-}
-
-
-
-/* =====================================================
-   HELPER: CEK APAKAH ARTIST = USER YANG LOGIN & PUNYA FOTO
-===================================================== */
-
-function getArtistAvatarHtml(art, size = "sm") {
-
-    const myName = localStorage.getItem("profileName") || "";
-    const myPhoto = localStorage.getItem("profilePhoto") || "";
-
-    const isMe =
-        myName &&
-        myName.toLowerCase() === (art.artist || "").toLowerCase();
-
-    const hasPhoto = myPhoto && myPhoto.trim() !== "";
-
-
-    /* Artist = user login & punya foto → pakai foto */
-
-    if (isMe && hasPhoto) {
-
-        const sizes = {
-            sm: "w-10 h-10",
-            md: "w-20 h-20",
-            lg: "w-24 h-24"
-        };
-
-        return `
-            <img src="${myPhoto}"
-                 alt="${art.artist}"
-                 class="${sizes[size]} rounded-full object-cover
-                        border-2 border-white shadow-md">
-        `;
-    }
-
-
-    /* Selain itu → inisial */
-
-    return getInitialAvatar(art.artist, size);
-}
-
-
-
-/* =====================================================
-   STATIC ARTS
-===================================================== */
-
-const staticArts = [
-    { id: 1, title: "Mona Lisa",
-      description: "Probably the most famous painting in the world is Leonardo da Vinci's La Gioconda, better known as Mona Lisa.",
-      image: "{{ asset('images/arts/mona-lisa.jpg') }}",
-      artist: "Leonardo da Vinci", artistId: "leonardo",
-      category: "Traditional", date: "1503-01-01" },
-
-    { id: 2, title: "The Birth of Venus",
-      description: "Another of the most famous paintings is The Birth of Venus. Botticelli's painting illustrates the myth of the birth of Aphrodite.",
-      image: "{{ asset('images/arts/birth-of-venus.jpg') }}",
-      artist: "Sandro Botticelli", artistId: "botticelli",
-      category: "Traditional", date: "1485-01-01" },
-
-    { id: 3, title: "The Creation Of Adam",
-      description: "Michelangelo's fresco The Creation of Adam, which adorns the ceiling of the Sistine Chapel.",
-      image: "{{ asset('images/arts/creation-of-adam.jpg') }}",
-      artist: "Michelangelo", artistId: "michelangelo",
-      category: "Traditional", date: "1512-01-01" },
-
-    { id: 4, title: "The Last Supper",
-      description: "For more than 500 years of its existence, the famous fresco The Last Supper has been restored at least five times.",
-      image: "{{ asset('images/arts/last-supper.jpg') }}",
-      artist: "Leonardo da Vinci", artistId: "leonardo",
-      category: "Traditional", date: "1498-01-01" },
-
-    { id: 5, title: "The Sacred and Profane Love",
-      description: "The current name of the painting was not given by Titian himself, but appeared only two centuries later.",
-      image: "{{ asset('images/arts/sacred-love.jpg') }}",
-      artist: "Titian", artistId: "titian",
-      category: "Traditional", date: "1514-01-01" },
-
-    { id: 6, title: "The Ancient of Days",
-      description: "This popular artwork by William Blake is now in the British Museum, London.",
-      image: "{{ asset('images/arts/ancient-days.jpg') }}",
-      artist: "William Blake", artistId: "blake",
-      category: "Traditional", date: "1794-01-01" },
-
-    { id: 7, title: "Liberty Leading the People",
-      description: "Liberty Leading the People by Eugene Delacroix, as the best known example.",
-      image: "{{ asset('images/arts/liberty-leading.jpg') }}",
-      artist: "Eugène Delacroix", artistId: "delacroix",
-      category: "Traditional", date: "1830-01-01" },
-
-    { id: 8, title: "The Madonna Litta",
-      description: "This masterpiece, a world classic long ago, is kept in the Hermitage in St. Petersburg.",
-      image: "{{ asset('images/arts/madonna-litta.jpg') }}",
-      artist: "Leonardo da Vinci", artistId: "leonardo",
-      category: "Traditional", date: "1490-01-01" },
-
-    { id: 9, title: "Landscape with the Fall of Icarus",
-      description: "This painting, by Dutch artist Pieter Bruegel, is now part of the collection.",
-      image: "{{ asset('images/arts/landscape-icarus.jpg') }}",
-      artist: "Pieter Bruegel", artistId: "bruegel",
-      category: "Traditional", date: "1560-01-01" }
-];
-
-
-
-/* =====================================================
-   STATIC ARTISTS
-===================================================== */
-
-const staticArtists = {
-    leonardo: { name: "Leonardo da Vinci", username: "@leonardodavinci",
-                bio: "Italian Renaissance artist known for some of the most influential artworks in Western art." },
-    botticelli: { name: "Sandro Botticelli", username: "@sandrobotticelli",
-                  bio: "Italian Renaissance painter known for elegant mythological and religious compositions." },
-    michelangelo: { name: "Michelangelo", username: "@michelangelo",
-                    bio: "Italian Renaissance artist, sculptor, painter and architect." },
-    titian: { name: "Titian", username: "@titian",
-              bio: "Italian Renaissance painter known for his expressive use of color." },
-    blake: { name: "William Blake", username: "@williamblake",
-             bio: "English poet, painter and printmaker whose work combined art and literature." },
-    delacroix: { name: "Eugène Delacroix", username: "@delacroix",
-                 bio: "French Romantic artist known for dramatic compositions and expressive color." },
-    bruegel: { name: "Pieter Bruegel", username: "@pieterbruegel",
-               bio: "Dutch Renaissance painter known for detailed landscapes and scenes of everyday life." }
-};
-
-
-
-/* =====================================================
-   USER ARTS
-===================================================== */
-
-let userArts = [];
-
-try {
-    userArts = JSON.parse(localStorage.getItem("userArts") || "[]");
-    if (!Array.isArray(userArts)) userArts = [];
-} catch (e) { userArts = []; }
-
-
-
-/* =====================================================
-   CONVERT USER ARTS
-===================================================== */
-
-const convertedUserArts = userArts.map((art, index) => {
-
-    const creator =
-        art.creator ||
-        localStorage.getItem("profileName") ||
-        "Unknown Artist";
-
-    const artistId =
-        "user-" + creator.toLowerCase()
-            .replace(/[^a-z0-9]+/g, "-")
-            .replace(/^-|-$/g, "");
-
-    return {
-        id: "user-" + (art.id || index),
-        originalId: art.id || index,
-        title: art.title || "Untitled",
-        description: art.description || "No description available.",
-        image: art.image || "",
-        artist: creator,
-        artistId: artistId,
-        category: art.category || "Digital",
-        date: art.date || new Date().toISOString()
-    };
-});
-
-
-
-const allArts = [...staticArts, ...convertedUserArts];
-
+const arts = @json($artsData);
 
 
 /* =====================================================
    STATE
 ===================================================== */
 
-let newestArts = [...allArts]
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 4);
-
-let currentModalArt = null;
-let currentModalList = [];
 let currentModalIndex = 0;
+let currentModalArt = null;
 let currentArtistIndex = 0;
-let artistList = [];
-
-
-
-/* =====================================================
-   RENDER NEWEST ARTS
-===================================================== */
-
-function renderNewestArts() {
-
-    const container = document.getElementById("newestArts");
-    const empty = document.getElementById("emptyArts");
-
-    container.innerHTML = "";
-
-    if (!newestArts.length) {
-        empty.classList.remove("hidden");
-        return;
-    }
-
-    empty.classList.add("hidden");
-
-    newestArts.forEach((art, index) => {
-
-        const card = document.createElement("button");
-        card.type = "button";
-
-        card.onclick = () => openArtModal(art, newestArts);
-
-        card.className = `
-            art-card text-left bg-white
-            border border-gray-200 rounded-xl
-            overflow-hidden
-            shadow-[0_3px_8px_rgba(0,0,0,.10)]
-            group
-        `;
-
-        card.style.animation =
-            `sectionIn .45s ease ${index * .08}s both`;
-
-        card.innerHTML = `
-            <div class="h-[145px] overflow-hidden bg-[#f5eeee] relative">
-                <img src="${escapeHtml(art.image)}"
-                     alt="${escapeHtml(art.title)}"
-                     class="w-full h-full object-cover">
-
-                <span class="absolute top-3 right-3 text-[7px]
-                             px-2 py-1 rounded-full bg-white/90
-                             text-[#c83232] font-bold">
-                    ${escapeHtml(art.category)}
-                </span>
-            </div>
-
-            <div class="p-3">
-                <h3 class="text-[11px] font-bold text-gray-800 truncate">
-                    ${escapeHtml(art.title)}
-                </h3>
-
-                <p class="text-[8px] text-gray-400 mt-1 truncate">
-                    ${escapeHtml(art.artist)}
-                </p>
-
-                <div class="flex justify-between items-center mt-3">
-                    <span class="text-[7px] text-gray-400">
-                        ${formatDate(art.date)}
-                    </span>
-                    <span class="text-[#72ccd2] text-xs
-                                 group-hover:translate-x-1 transition">
-                        →
-                    </span>
-                </div>
-            </div>
-        `;
-
-        container.appendChild(card);
-    });
-}
-
-
-
-/* =====================================================
-   BUILD ARTIST LIST
-===================================================== */
-
-function buildArtistList() {
-
-    const grouped = {};
-
-    allArts.forEach(art => {
-        if (!grouped[art.artistId]) {
-            grouped[art.artistId] = {
-                id: art.artistId,
-                name: art.artist,
-                arts: []
-            };
-        }
-        grouped[art.artistId].arts.push(art);
-    });
-
-
-    artistList = Object.values(grouped)
-        .sort((a, b) => b.arts.length - a.arts.length);
-
-
-    artistList = artistList.map(artist => {
-
-        let info = staticArtists[artist.id];
-
-        if (!info) {
-
-            const myName = localStorage.getItem("profileName") || "";
-            const myPhoto = localStorage.getItem("profilePhoto") || "";
-            const bio = localStorage.getItem("profileBio") || "";
-
-            const isMe =
-                myName &&
-                myName.toLowerCase() === artist.name.toLowerCase();
-
-            const hasPhoto = myPhoto && myPhoto.trim() !== "";
-
-
-            info = {
-                name: artist.name,
-                username: "@" + artist.name.toLowerCase()
-                                .replace(/[^a-z0-9]+/g, ""),
-                bio: bio || "CreateTopia artist.",
-
-                /* Foto HANYA kalau artist = user login & punya foto */
-
-                image: (isMe && hasPhoto) ? myPhoto : ""
-            };
-        }
-
-        return { ...artist, ...info };
-    });
-}
-
-
-
-/* =====================================================
-   RENDER ARTISTS (CAROUSEL)
-===================================================== */
-
-function renderArtists() {
-
-    const track = document.getElementById("artistTrack");
-    track.innerHTML = "";
-
-    if (!artistList.length) return;
-
-
-    artistList.forEach((artist, index) => {
-
-        const card = document.createElement("a");
-
-        card.href = "{{ url('/artist') }}/" +
-                    encodeURIComponent(artist.id);
-
-        card.className = `
-            artist-card flex-shrink-0
-            w-[220px] md:w-[260px]
-            bg-[#fffaf4] border border-gray-200
-            rounded-2xl p-5 text-center
-            shadow-[0_3px_8px_rgba(0,0,0,.08)]
-            block relative overflow-hidden group
-        `;
-
-        card.style.animation =
-            `sectionIn .45s ease ${index * .08}s both`;
-
-
-        /* Pilih: foto atau inisial */
-
-        const hasPhoto = artist.image && artist.image.trim() !== "";
-
-        const avatarHtml = hasPhoto
-            ? `<img src="${escapeHtml(artist.image)}"
-                    alt="${escapeHtml(artist.name)}"
-                    class="artist-photo relative w-20 h-20
-                           rounded-full object-cover
-                           border-4 border-white shadow-md">`
-            : `<div class="artist-photo relative"
-                    style="display:inline-block;">
-                    ${getInitialAvatar(artist.name, "md")}
-               </div>`;
-
-
-        card.innerHTML = `
-
-            <!-- BACK DECORATION -->
-            <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full
-                        bg-[#ffdd9a] opacity-40
-                        group-hover:scale-125 transition duration-500">
-            </div>
-
-            <div class="absolute -left-5 bottom-4 w-10 h-10 rounded-full
-                        border-4 border-[#72ccd2] opacity-30
-                        group-hover:rotate-45 transition duration-500">
-            </div>
-
-
-            <!-- PHOTO -->
-            <div class="relative flex justify-center z-10">
-
-                <div class="absolute w-24 h-24 rounded-full
-                            bg-[#72ccd2] opacity-20
-                            group-hover:scale-110 transition duration-500">
-                </div>
-
-                ${avatarHtml}
-
-            </div>
-
-
-            <!-- NAME -->
-            <h3 class="relative z-10 text-sm font-bold text-gray-800
-                       mt-4 group-hover:text-[#c83232] transition">
-                ${escapeHtml(artist.name)}
-            </h3>
-
-
-            <!-- USERNAME -->
-            <p class="relative z-10 text-[8px] text-[#c83232] mt-1">
-                ${escapeHtml(artist.username)}
-            </p>
-
-
-            <!-- COUNT -->
-            <div class="relative z-10 inline-flex mt-3 px-3 py-1
-                        rounded-full bg-[#e9f7f8] text-[#5eb5bf]
-                        text-[8px] font-bold
-                        group-hover:bg-[#72ccd2]
-                        group-hover:text-white transition">
-                ${artist.arts.length}
-                artwork${artist.arts.length !== 1 ? "s" : ""}
-            </div>
-
-
-            <!-- BIO -->
-            <p class="relative z-10 text-[8px] text-gray-400
-                      leading-4 mt-3 line-clamp-2">
-                ${escapeHtml(artist.bio)}
-            </p>
-
-
-            <!-- VIEW -->
-            <div class="relative z-10 mt-4 text-[8px] font-bold
-                        text-[#72ccd2]
-                        group-hover:text-[#c83232]
-                        group-hover:translate-x-1 transition">
-                View Artist →
-            </div>
-        `;
-
-        track.appendChild(card);
-    });
-
-    updateArtistCarousel();
-}
-
 
 
 /* =====================================================
    ARTIST CAROUSEL
 ===================================================== */
 
-function updateArtistCarousel() {
+const artistTrack =
+    document.getElementById("artistTrack");
 
-    const track = document.getElementById("artistTrack");
+const artistCount =
+    {{ $artists->count() }};
+
+
+function updateArtistCarousel() {
 
     const cardWidth =
         window.innerWidth >= 768 ? 280 : 240;
 
-    const maxIndex = Math.max(0, artistList.length - 1);
+    const maxIndex =
+        Math.max(0, artistCount - 1);
 
     if (currentArtistIndex > maxIndex) {
         currentArtistIndex = maxIndex;
     }
 
-    track.style.transform =
+    artistTrack.style.transform =
         `translateX(-${currentArtistIndex * cardWidth}px)`;
 }
 
 
-
 function nextArtist() {
 
-    if (!artistList.length) return;
+    if (!artistCount) return;
 
     currentArtistIndex =
-        (currentArtistIndex < artistList.length - 1)
+        currentArtistIndex < artistCount - 1
             ? currentArtistIndex + 1
             : 0;
 
@@ -1089,37 +915,34 @@ function nextArtist() {
 
 function previousArtist() {
 
-    if (!artistList.length) return;
+    if (!artistCount) return;
 
     currentArtistIndex =
-        (currentArtistIndex > 0)
+        currentArtistIndex > 0
             ? currentArtistIndex - 1
-            : artistList.length - 1;
+            : artistCount - 1;
 
     updateArtistCarousel();
 }
-
 
 
 /* =====================================================
    OPEN ART MODAL
 ===================================================== */
 
-function openArtModal(art, list = newestArts) {
+function openArtModal(index) {
 
-    currentModalList = list;
+    if (!arts.length) return;
 
-    currentModalIndex = currentModalList.findIndex(
-        item => item.id === art.id
-    );
+    currentModalIndex = index;
 
-    if (currentModalIndex < 0) currentModalIndex = 0;
-
-    currentModalArt = currentModalList[currentModalIndex];
+    currentModalArt =
+        arts[currentModalIndex];
 
     updateArtModal();
 
-    const modal = document.getElementById("artModal");
+    const modal =
+        document.getElementById("artModal");
 
     modal.classList.remove("hidden");
     modal.classList.add("flex");
@@ -1128,9 +951,8 @@ function openArtModal(art, list = newestArts) {
 }
 
 
-
 /* =====================================================
-   UPDATE ART MODAL
+   UPDATE MODAL
 ===================================================== */
 
 function updateArtModal() {
@@ -1139,112 +961,176 @@ function updateArtModal() {
 
     const art = currentModalArt;
 
-    const image = document.getElementById("modalImage");
 
-    image.src = art.image || "";
+    document.getElementById("modalImage").src =
+        art.image || "";
 
 
-    document.getElementById("modalTitle").textContent = art.title;
-    document.getElementById("modalDescription").textContent = art.description;
-    document.getElementById("modalCategory").textContent = art.category;
-    document.getElementById("modalArtist").textContent = art.artist;
-    document.getElementById("modalDate").textContent =
+    document.getElementById("modalTitle")
+        .textContent = art.title;
+
+
+    document.getElementById("modalDescription")
+        .textContent = art.description;
+
+
+    document.getElementById("modalCategory")
+        .textContent = art.category;
+
+
+    document.getElementById("modalArtist")
+        .textContent = art.artist;
+
+
+    document.getElementById("modalDate")
+        .textContent =
         "Uploaded on " + formatDateTime(art.date);
 
 
-    /* AVATAR ARTIST — pakai helper */
+    /* AVATAR */
 
-    document.getElementById("modalArtistAvatar").innerHTML =
-        getArtistAvatarHtml(art, "sm");
+    const avatar =
+        document.getElementById("modalArtistAvatar");
+
+
+    if (art.artistPhoto) {
+
+        avatar.innerHTML = `
+            <img src="${escapeHtml(art.artistPhoto)}"
+                 alt="${escapeHtml(art.artist)}"
+                 class="w-full h-full object-cover">
+        `;
+
+    } else {
+
+        const initial =
+            (art.artist || "?")
+                .charAt(0)
+                .toUpperCase();
+
+        avatar.innerHTML = `
+            <div class="w-full h-full avatar-initial"
+                 style="background:
+                 linear-gradient(135deg,
+                 #62C4DA, #C93638);">
+                ${escapeHtml(initial)}
+            </div>
+        `;
+    }
 
 
     /* COUNTER */
 
-    document.getElementById("modalCounter").textContent =
-        `${currentModalIndex + 1} / ${currentModalList.length}`;
+    document.getElementById("modalCounter")
+        .textContent =
+        `${currentModalIndex + 1} / ${arts.length}`;
 
 
-    /* SHOW/HIDE ARROWS */
+    /* ARROWS */
 
-    const prev = document.getElementById("modalPrev");
-    const next = document.getElementById("modalNext");
+    const prev =
+        document.getElementById("modalPrev");
 
-    if (currentModalList.length > 1) {
+    const next =
+        document.getElementById("modalNext");
+
+
+    if (arts.length > 1) {
+
         prev.classList.remove("hidden");
         next.classList.remove("hidden");
+
     } else {
+
         prev.classList.add("hidden");
         next.classList.add("hidden");
+
     }
 }
 
 
-
 /* =====================================================
-   ART → ARTIST DETAIL
+   ART → ARTIST
 ===================================================== */
 
 function openArtistFromArt() {
 
     if (!currentModalArt) return;
 
+    if (!currentModalArt.artistId) return;
+
     window.location.href =
         "{{ url('/artist') }}/" +
-        encodeURIComponent(currentModalArt.artistId);
+        encodeURIComponent(
+            currentModalArt.artistId
+        );
 }
 
 
-
 /* =====================================================
-   NEXT / PREV ART
+   NEXT ART
 ===================================================== */
 
 function nextModalArt() {
 
-    if (currentModalList.length <= 1) return;
+    if (arts.length <= 1) return;
 
     currentModalIndex++;
 
-    if (currentModalIndex >= currentModalList.length) {
+    if (currentModalIndex >= arts.length) {
         currentModalIndex = 0;
     }
 
-    currentModalArt = currentModalList[currentModalIndex];
+    currentModalArt =
+        arts[currentModalIndex];
 
     animateModalChange();
 }
 
 
+/* =====================================================
+   PREVIOUS ART
+===================================================== */
+
 function previousModalArt() {
 
-    if (currentModalList.length <= 1) return;
+    if (arts.length <= 1) return;
 
     currentModalIndex--;
 
     if (currentModalIndex < 0) {
-        currentModalIndex = currentModalList.length - 1;
+        currentModalIndex = arts.length - 1;
     }
 
-    currentModalArt = currentModalList[currentModalIndex];
+    currentModalArt =
+        arts[currentModalIndex];
 
     animateModalChange();
 }
 
 
+/* =====================================================
+   MODAL ANIMATION
+===================================================== */
+
 function animateModalChange() {
 
-    const image = document.getElementById("modalImage");
+    const image =
+        document.getElementById("modalImage");
 
     image.style.opacity = "0";
     image.style.transform = "scale(1.04)";
 
+
     setTimeout(() => {
+
         updateArtModal();
+
         image.style.opacity = "1";
         image.style.transform = "scale(1)";
+
     }, 150);
 }
-
 
 
 /* =====================================================
@@ -1253,7 +1139,8 @@ function animateModalChange() {
 
 function closeArtModal() {
 
-    const modal = document.getElementById("artModal");
+    const modal =
+        document.getElementById("artModal");
 
     modal.classList.add("hidden");
     modal.classList.remove("flex");
@@ -1264,41 +1151,35 @@ function closeArtModal() {
 }
 
 
-
 /* =====================================================
    DATE FORMAT
 ===================================================== */
 
-function formatDate(date) {
-
-    const parsed = new Date(date);
-
-    if (isNaN(parsed.getTime())) return "Unknown date";
-
-    return parsed.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric"
-    });
-}
-
-
 function formatDateTime(date) {
 
-    const parsed = new Date(date);
+    const parsed =
+        new Date(date);
 
-    if (isNaN(parsed.getTime())) return "Unknown date";
+    if (isNaN(parsed.getTime())) {
+        return "Unknown date";
+    }
 
-    return parsed.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric"
-    }) + " at " + parsed.toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit"
-    });
+    return parsed.toLocaleDateString(
+        "en-US",
+        {
+            year: "numeric",
+            month: "short",
+            day: "numeric"
+        }
+    ) + " at " +
+    parsed.toLocaleTimeString(
+        "en-US",
+        {
+            hour: "2-digit",
+            minute: "2-digit"
+        }
+    );
 }
-
 
 
 /* =====================================================
@@ -1316,41 +1197,55 @@ function escapeHtml(text) {
 }
 
 
-
 /* =====================================================
    EVENT LISTENERS
 ===================================================== */
 
 document.getElementById("artModal")
     .addEventListener("click", function (e) {
-        if (e.target === this) closeArtModal();
+
+        if (e.target === this) {
+            closeArtModal();
+        }
+
     });
 
 
 document.addEventListener("keydown", function (e) {
 
-    if (e.key === "Escape") closeArtModal();
+    if (e.key === "Escape") {
+        closeArtModal();
+    }
 
-    const modal = document.getElementById("artModal");
+    const modal =
+        document.getElementById("artModal");
 
     if (!modal.classList.contains("hidden")) {
-        if (e.key === "ArrowRight") nextModalArt();
-        if (e.key === "ArrowLeft")  previousModalArt();
+
+        if (e.key === "ArrowRight") {
+            nextModalArt();
+        }
+
+        if (e.key === "ArrowLeft") {
+            previousModalArt();
+        }
+
     }
+
 });
 
 
-window.addEventListener("resize", updateArtistCarousel);
-
+window.addEventListener(
+    "resize",
+    updateArtistCarousel
+);
 
 
 /* =====================================================
    START
 ===================================================== */
 
-renderNewestArts();
-buildArtistList();
-renderArtists();
+updateArtistCarousel();
 
 </script>
 

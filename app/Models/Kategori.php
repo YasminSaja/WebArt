@@ -6,7 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Kategori extends Model
 {
-    protected $primarykey = 'id_kategori'; 
+    protected $table = 'kategoris';
+
+    protected $primaryKey = 'id_kategori';
 
     protected $fillable = [
         'nama_kategori',
@@ -15,6 +17,6 @@ class Kategori extends Model
     public function karyas()
     {
         return $this->hasMany(Karya::class,
-        'id_kategori', 'id_kategori');
+            'id_kategori', 'id_kategori');
     }
 }

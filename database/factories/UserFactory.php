@@ -20,6 +20,10 @@ class UserFactory extends Factory
     /**
      * Define the model's default state.
      *
+     * CATATAN: tabel `users` di project ini tidak punya kolom
+     * `email_verified_at` (lihat migration create_users_table),
+     * jadi kolom itu TIDAK boleh diisi di sini.
+     *
      * @return array<string, mixed>
      */
     public function definition(): array
@@ -27,19 +31,40 @@ class UserFactory extends Factory
         return [
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'role' => 'user',
+            'status' => 'approved',
         ];
     }
 
     /**
-     * Indicate that the model's email address should be unverified.
+     * Akun yang masih menunggu persetujuan admin.
      */
-    public function unverified(): static
+    public function pending(): static
     {
         return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null,
+            'status' => 'pending',
+        ]);
+    }
+
+    /**
+     * Akun yang sudah ditolak admin.
+     */
+    public function rejected(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'rejected',
+        ]);
+    }
+
+    /**
+     * Akun admin (dashboard admin).
+     */
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'admin',
         ]);
     }
 }

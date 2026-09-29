@@ -142,10 +142,7 @@
                     Artist
                 </h1>
 
-                <p id="artistUsername"
-                   class="text-white text-[9px] opacity-80 mt-1">
-                    @artist
-                </p>
+                {{--  --}}
 
                 <p id="artistBio"
                    class="text-white text-[9px] leading-[13px]
@@ -325,225 +322,68 @@ function getInitialAvatar(nama) {
 
 
 /* =====================================================
-   HELPER: APAKAH ARTIST = USER LOGIN & PUNYA FOTO?
+   FOTO ARTIST
+   Sekarang diambil dari database: artist.photo
 ===================================================== */
 
-function getArtistPhoto(artistName) {
+function getArtistPhoto(artist) {
 
-    const myName = localStorage.getItem("profileName") || "";
-    const myPhoto = localStorage.getItem("profilePhoto") || "";
+    const photo = (artist && artist.photo) || "";
 
-    const isMe =
-        myName &&
-        myName.toLowerCase() === (artistName || "").toLowerCase();
-
-    const hasPhoto = myPhoto && myPhoto.trim() !== "";
-
-    return (isMe && hasPhoto) ? myPhoto : "";
+    return photo && photo.trim() !== "" ? photo : "";
 }
 
 
 
 /* =====================================================
-   ARTIST ID DARI URL
-===================================================== */
+   ARTIST ID DARI DATABASE
+=====================================================
+   id ini sama dengan id di URL (/artist/{id}), dikirim
+   oleh ArtistController@show() sebagai bagian dari
+   data $artist. Jadi tidak perlu parse URL manual. */
 
-const artistId = "{{ $id }}";
-
-
-
-/* =====================================================
-   STATIC ARTISTS
-===================================================== */
-
-const staticArtists = {
-
-    leonardo: {
-        name: "Leonardo da Vinci",
-        username: "@leonardodavinci",
-        bio: "Italian Renaissance artist known for some of the most influential artworks in Western art."
-    },
-
-    botticelli: {
-        name: "Sandro Botticelli",
-        username: "@sandrobotticelli",
-        bio: "Italian Renaissance painter known for elegant mythological and religious compositions."
-    },
-
-    michelangelo: {
-        name: "Michelangelo",
-        username: "@michelangelo",
-        bio: "Italian Renaissance artist, sculptor, painter and architect."
-    },
-
-    titian: {
-        name: "Titian",
-        username: "@titian",
-        bio: "Italian Renaissance painter known for his expressive use of color."
-    },
-
-    blake: {
-        name: "William Blake",
-        username: "@williamblake",
-        bio: "English poet, painter and printmaker whose work combined art and literature."
-    },
-
-    delacroix: {
-        name: "Eugène Delacroix",
-        username: "@delacroix",
-        bio: "French Romantic artist known for dramatic compositions and expressive color."
-    },
-
-    bruegel: {
-        name: "Pieter Bruegel",
-        username: "@pieterbruegel",
-        bio: "Dutch Renaissance painter known for detailed landscapes and scenes of everyday life."
-    }
-
-};
+const artistId = @json($artist['id']);
 
 
 
 /* =====================================================
-   STATIC ARTS
+   ARTIST + ART DATA — DARI DATABASE
+=====================================================
+  $data dikirim oleh ArtistController@show() lewat
+   FrontendData::artists() & FrontendData::arts(),
+   jadi di sini TIDAK PERLU tahu nama kolom aslinya.
+
+   Bentuk artist:
+   { id, name, bio, photo, artworks, date }
+
+   CATATAN: tidak ada `username`. Project ini tidak memakai
+   username, jadi jangan ditambah lagi.
+
+   Bentuk art (dipakai renderArts() di bawah):
+   { id, title, description, image, artist, artistId,
+     artistPhoto, category, date }
+
+   Kalau nanti butuh ubah bentuk data ini, ubah di
+   app/Support/FrontendData.php — bukan di file ini.
 ===================================================== */
 
-const staticArts = [
-    { id: 1, title: "Mona Lisa", artistId: "leonardo", artist: "Leonardo da Vinci",
-      category: "Traditional", date: "1503-01-01",
-      image: "{{ asset('images/arts/mona-lisa.jpg') }}",
-      description: "Probably the most famous painting in the world is Leonardo da Vinci's La Gioconda, better known as Mona Lisa." },
+// Satu artist ini, dibungkus array supaya bisa
+// dicari dengan .find() seperti di bawah.
+const allArtists = @json([$artist]);
 
-    { id: 2, title: "The Birth of Venus", artistId: "botticelli", artist: "Sandro Botticelli",
-      category: "Traditional", date: "1485-01-01",
-      image: "{{ asset('images/arts/birth-of-venus.jpg') }}",
-      description: "Botticelli's famous painting illustrates the myth of the birth of Aphrodite." },
-
-    { id: 3, title: "The Creation Of Adam", artistId: "michelangelo", artist: "Michelangelo",
-      category: "Traditional", date: "1512-01-01",
-      image: "{{ asset('images/arts/creation-of-adam.jpg') }}",
-      description: "Michelangelo's famous fresco from the ceiling of the Sistine Chapel." },
-
-    { id: 4, title: "The Last Supper", artistId: "leonardo", artist: "Leonardo da Vinci",
-      category: "Traditional", date: "1498-01-01",
-      image: "{{ asset('images/arts/last-supper.jpg') }}",
-      description: "Leonardo da Vinci's famous fresco depicting the Last Supper." },
-
-    { id: 5, title: "The Sacred and Profane Love", artistId: "titian", artist: "Titian",
-      category: "Traditional", date: "1514-01-01",
-      image: "{{ asset('images/arts/sacred-love.jpg') }}",
-      description: "A famous Renaissance painting by Titian." },
-
-    { id: 6, title: "The Ancient of Days", artistId: "blake", artist: "William Blake",
-      category: "Traditional", date: "1794-01-01",
-      image: "{{ asset('images/arts/ancient-days.jpg') }}",
-      description: "A popular artwork by William Blake." },
-
-    { id: 7, title: "Liberty Leading the People", artistId: "delacroix", artist: "Eugène Delacroix",
-      category: "Traditional", date: "1830-01-01",
-      image: "{{ asset('images/arts/liberty-leading.jpg') }}",
-      description: "One of the best-known examples of Romantic painting." },
-
-    { id: 8, title: "The Madonna Litta", artistId: "leonardo", artist: "Leonardo da Vinci",
-      category: "Traditional", date: "1490-01-01",
-      image: "{{ asset('images/arts/madonna-litta.jpg') }}",
-      description: "A Renaissance masterpiece associated with Leonardo da Vinci." },
-
-    { id: 9, title: "Landscape with the Fall of Icarus", artistId: "bruegel", artist: "Pieter Bruegel",
-      category: "Traditional", date: "1560-01-01",
-      image: "{{ asset('images/arts/landscape-icarus.jpg') }}",
-      description: "A famous landscape painting by Pieter Bruegel." }
-];
+const allArts = @json($arts);
 
 
 
 /* =====================================================
-   LOAD USER ARTS
+   CARI ARTIST + KARYANYA DARI DATA DATABASE
 ===================================================== */
 
-let userArts = [];
+let artist = allArtists.find(a => String(a.id) === String(artistId)) || null;
 
-try {
-    userArts = JSON.parse(localStorage.getItem("userArts") || "[]");
-    if (!Array.isArray(userArts)) userArts = [];
-} catch (e) { userArts = []; }
-
-
-
-/* =====================================================
-   HELPER: MAKE ARTIST ID
-===================================================== */
-
-function makeArtistId(nama) {
-    return "user-" + nama
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-|-$/g, "");
-}
-
-
-
-/* =====================================================
-   BUILD ARTIST DATA DARI USER ARTS
-===================================================== */
-
-function buildUserArtists() {
-
-    const grouped = {};
-
-    userArts.forEach((art, index) => {
-
-        const creator = art.creator || "Unknown Artist";
-        const id = makeArtistId(creator);
-
-        if (!grouped[id]) {
-            grouped[id] = {
-                name: creator,
-                username: "@" + creator.toLowerCase().replace(/\s+/g, ""),
-                bio: "CreateTopia artist.",
-                arts: []
-            };
-        }
-
-        grouped[id].arts.push({
-            id: "user-" + (art.id !== undefined ? art.id : index),
-            title: art.title || "Untitled",
-            artistId: id,
-            artist: creator,
-            category: art.category || "Digital",
-            date: art.date || new Date().toISOString(),
-            image: art.image || "",
-            description: art.description || "No description available."
-        });
-    });
-
-    return grouped;
-}
-
-
-
-/* =====================================================
-   BUILD ARTIST OBJECT FINAL
-===================================================== */
-
-const userArtistMap = buildUserArtists();
-
-let artist = null;
-let artistArts = [];
-
-
-/* 1. Cek di staticArtists dulu */
-
-if (staticArtists[artistId]) {
-    artist = staticArtists[artistId];
-    artistArts = staticArts.filter(a => a.artistId === artistId);
-}
-
-/* 2. Cek di user artist map */
-else if (userArtistMap[artistId]) {
-    artist = userArtistMap[artistId];
-    artistArts = artist.arts;
-}
+let artistArts = allArts.filter(
+    art => String(art.artistId) === String(artistId)
+);
 
 
 
@@ -591,7 +431,6 @@ if (!artist) {
 ===================================================== */
 
 document.getElementById("artistName").textContent = artist.name;
-document.getElementById("artistUsername").textContent = artist.username;
 document.getElementById("artistBio").textContent = artist.bio;
 
 
@@ -610,7 +449,7 @@ function renderAvatar() {
 
     /* Cek: apakah ini user login & punya foto? */
 
-    const photoUrl = getArtistPhoto(artist.name);
+    const photoUrl = getArtistPhoto(artist);
 
 
     /* Ada foto → tampil foto */
@@ -707,8 +546,22 @@ function renderArts() {
         card.type = "button";
 
         card.onclick = () => {
+            /* PENTING: pakai route('art.detail', id), jangan
+               menulis URL secara manual.
+
+               Dulu di sini URL-nya ditulis langsung sebagai
+               "/art" + "/" + id, jadi address-nya jadi
+               "/art/5". Padahal route-nya "/arts/{id}"
+               (ada huruf S) -> tidak ada yang cocok -> 404.
+
+               Trik di bawah: Blade membuat URL dengan id
+               placeholder "__ID__", lalu JavaScript
+               menggantinya dengan id karya yang diklik.
+               route() selalu menghasilkan URL yang benar,
+               walau nanti route-nya diubah. */
             window.location.href =
-                "{{ url('/art') }}/" + encodeURIComponent(art.id);
+                "{{ route('art.detail', ['id' => '__ID__']) }}"
+                    .replace("__ID__", encodeURIComponent(art.id));
         };
 
 

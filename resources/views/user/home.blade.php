@@ -211,23 +211,23 @@
 
     <nav class="w-full flex justify-center items-center gap-4 pt-10 pb-5">
 
-        <a href="{{ route('home') }}"
+        <a href="{{ route('user.home') }}"
            class="bg-[#72ccd2] text-white px-2 py-1 rounded text-xs
                   hover:opacity-80 transition">
             Home
         </a>
 
-        <a href="{{ route('arts') }}"
+        <a href="{{ route('user.arts') }}"
            class="text-[#e05252] text-xs hover:text-[#72ccd2] transition">
             Arts
         </a>
 
-        <a href="{{ route('artist') }}"
+        <a href="{{ route('user.artist') }}"
            class="text-[#e05252] text-xs hover:text-[#72ccd2] transition">
             Artist
         </a>
 
-        <a href="{{ route('category') }}"
+        <a href="{{ route('user.category') }}"
            class="text-[#e05252] text-xs hover:text-[#72ccd2] transition">
             Category
         </a>
@@ -603,24 +603,21 @@ function getInitialAvatar(nama, size = "md") {
 
 
 /* =====================================================
-   HELPER: CEK APAKAH ARTIST = USER YANG LOGIN & PUNYA FOTO
+   HELPER: FOTO ARTIST (dari database)
 ===================================================== */
 
 function getArtistAvatarHtml(art, size = "sm") {
 
-    const myName = localStorage.getItem("profileName") || "";
-    const myPhoto = localStorage.getItem("profilePhoto") || "";
+    /* Foto artist diambil dari database: art.artistPhoto */
 
-    const isMe =
-        myName &&
-        myName.toLowerCase() === (art.artist || "").toLowerCase();
+    const photo = art.artistPhoto || "";
 
-    const hasPhoto = myPhoto && myPhoto.trim() !== "";
+    const hasPhoto = photo && photo.trim() !== "";
 
 
-    /* Artist = user login & punya foto → pakai foto */
+    /* Artist punya foto → pakai foto */
 
-    if (isMe && hasPhoto) {
+    if (hasPhoto) {
 
         const sizes = {
             sm: "w-10 h-10",
@@ -629,7 +626,7 @@ function getArtistAvatarHtml(art, size = "sm") {
         };
 
         return `
-            <img src="${myPhoto}"
+            <img src="${photo}"
                  alt="${art.artist}"
                  class="${sizes[size]} rounded-full object-cover
                         border-2 border-white shadow-md">
@@ -645,135 +642,48 @@ function getArtistAvatarHtml(art, size = "sm") {
 
 
 /* =====================================================
-   STATIC ARTS
+   ART DATA — DARI DATABASE
+=====================================================
+   $arts dikirim oleh ProfileController@home() lewat
+   FrontendData::arts(). Isinya HANYA karya milik user
+   yang sedang login, dan dipakai untuk:
+     - bagian "Newest Arts"
+     - popup detail karya
+
+   Bentuk tiap item:
+   { id, title, description, image,
+     artist, artistId, artistPhoto, category, date }
+
+   Kalau nanti butuh ubah bentuk data ini, ubah di
+   app/Support/FrontendData.php — bukan di file ini.
 ===================================================== */
 
-const staticArts = [
-    { id: 1, title: "Mona Lisa",
-      description: "Probably the most famous painting in the world is Leonardo da Vinci's La Gioconda, better known as Mona Lisa.",
-      image: "{{ asset('images/arts/mona-lisa.jpg') }}",
-      artist: "Leonardo da Vinci", artistId: "leonardo",
-      category: "Traditional", date: "1503-01-01" },
-
-    { id: 2, title: "The Birth of Venus",
-      description: "Another of the most famous paintings is The Birth of Venus. Botticelli's painting illustrates the myth of the birth of Aphrodite.",
-      image: "{{ asset('images/arts/birth-of-venus.jpg') }}",
-      artist: "Sandro Botticelli", artistId: "botticelli",
-      category: "Traditional", date: "1485-01-01" },
-
-    { id: 3, title: "The Creation Of Adam",
-      description: "Michelangelo's fresco The Creation of Adam, which adorns the ceiling of the Sistine Chapel.",
-      image: "{{ asset('images/arts/creation-of-adam.jpg') }}",
-      artist: "Michelangelo", artistId: "michelangelo",
-      category: "Traditional", date: "1512-01-01" },
-
-    { id: 4, title: "The Last Supper",
-      description: "For more than 500 years of its existence, the famous fresco The Last Supper has been restored at least five times.",
-      image: "{{ asset('images/arts/last-supper.jpg') }}",
-      artist: "Leonardo da Vinci", artistId: "leonardo",
-      category: "Traditional", date: "1498-01-01" },
-
-    { id: 5, title: "The Sacred and Profane Love",
-      description: "The current name of the painting was not given by Titian himself, but appeared only two centuries later.",
-      image: "{{ asset('images/arts/sacred-love.jpg') }}",
-      artist: "Titian", artistId: "titian",
-      category: "Traditional", date: "1514-01-01" },
-
-    { id: 6, title: "The Ancient of Days",
-      description: "This popular artwork by William Blake is now in the British Museum, London.",
-      image: "{{ asset('images/arts/ancient-days.jpg') }}",
-      artist: "William Blake", artistId: "blake",
-      category: "Traditional", date: "1794-01-01" },
-
-    { id: 7, title: "Liberty Leading the People",
-      description: "Liberty Leading the People by Eugene Delacroix, as the best known example.",
-      image: "{{ asset('images/arts/liberty-leading.jpg') }}",
-      artist: "Eugène Delacroix", artistId: "delacroix",
-      category: "Traditional", date: "1830-01-01" },
-
-    { id: 8, title: "The Madonna Litta",
-      description: "This masterpiece, a world classic long ago, is kept in the Hermitage in St. Petersburg.",
-      image: "{{ asset('images/arts/madonna-litta.jpg') }}",
-      artist: "Leonardo da Vinci", artistId: "leonardo",
-      category: "Traditional", date: "1490-01-01" },
-
-    { id: 9, title: "Landscape with the Fall of Icarus",
-      description: "This painting, by Dutch artist Pieter Bruegel, is now part of the collection.",
-      image: "{{ asset('images/arts/landscape-icarus.jpg') }}",
-      artist: "Pieter Bruegel", artistId: "bruegel",
-      category: "Traditional", date: "1560-01-01" }
-];
+const allArts = @json($arts);
 
 
 
 /* =====================================================
-   STATIC ARTISTS
+   ARTIST DATA — DARI DATABASE
+=====================================================
+   $artists dikirim oleh ProfileController@home() lewat
+   FrontendData::artists().
+
+   Dipakai carousel "Most Uploaded Artists": semua artist
+   yang SUDAH approved, diurutkan dari yang paling banyak
+   karya (bukan karya milik user yang sedang login).
+
+   Bentuk tiap item:
+   { id, name, bio, photo, artworks, date }
+
+   CATATAN: property foto bernama `photo` (bukan `image`),
+   dan jumlah karya bernama `artworks` (bukan `arts`).
+   Itu bentuk dari FrontendData::artists().
+
+   Kalau nanti butuh ubah bentuk data ini, ubah di
+   app/Support/FrontendData.php — bukan di file ini.
 ===================================================== */
 
-const staticArtists = {
-    leonardo: { name: "Leonardo da Vinci", username: "@leonardodavinci",
-                bio: "Italian Renaissance artist known for some of the most influential artworks in Western art." },
-    botticelli: { name: "Sandro Botticelli", username: "@sandrobotticelli",
-                  bio: "Italian Renaissance painter known for elegant mythological and religious compositions." },
-    michelangelo: { name: "Michelangelo", username: "@michelangelo",
-                    bio: "Italian Renaissance artist, sculptor, painter and architect." },
-    titian: { name: "Titian", username: "@titian",
-              bio: "Italian Renaissance painter known for his expressive use of color." },
-    blake: { name: "William Blake", username: "@williamblake",
-             bio: "English poet, painter and printmaker whose work combined art and literature." },
-    delacroix: { name: "Eugène Delacroix", username: "@delacroix",
-                 bio: "French Romantic artist known for dramatic compositions and expressive color." },
-    bruegel: { name: "Pieter Bruegel", username: "@pieterbruegel",
-               bio: "Dutch Renaissance painter known for detailed landscapes and scenes of everyday life." }
-};
-
-
-
-/* =====================================================
-   USER ARTS
-===================================================== */
-
-let userArts = [];
-
-try {
-    userArts = JSON.parse(localStorage.getItem("userArts") || "[]");
-    if (!Array.isArray(userArts)) userArts = [];
-} catch (e) { userArts = []; }
-
-
-
-/* =====================================================
-   CONVERT USER ARTS
-===================================================== */
-
-const convertedUserArts = userArts.map((art, index) => {
-
-    const creator =
-        art.creator ||
-        localStorage.getItem("profileName") ||
-        "Unknown Artist";
-
-    const artistId =
-        "user-" + creator.toLowerCase()
-            .replace(/[^a-z0-9]+/g, "-")
-            .replace(/^-|-$/g, "");
-
-    return {
-        id: "user-" + (art.id || index),
-        originalId: art.id || index,
-        title: art.title || "Untitled",
-        description: art.description || "No description available.",
-        image: art.image || "",
-        artist: creator,
-        artistId: artistId,
-        category: art.category || "Digital",
-        date: art.date || new Date().toISOString()
-    };
-});
-
-
-
-const allArts = [...staticArts, ...convertedUserArts];
+const artists = @json($artists);
 
 
 
@@ -871,59 +781,28 @@ function renderNewestArts() {
 
 /* =====================================================
    BUILD ARTIST LIST
-===================================================== */
+=====================================================
+   Untuk carousel "Most Uploaded Artists".
+
+   DULU cara ini salah: artistList dibuat dengan
+   MENGELOMPOKKAN `allArts`, sedangkan allArts di
+   halaman ini hanya berisi karya milik user yang sedang
+   login. Akibatnya carouselnya cuma berisi satu kartu
+   (user itu sendiri), bukan artist paling aktif
+   seperti di beranda publik.
+
+   Sekarang artistList diambil dari `artists`, yaitu
+   daftar SEMUA artist approved yang sudah ikut
+   diurutkan dari yang paling banyak karya oleh
+   ProfileController@home(). Urutan ini kita ulangi
+   di sini juga supaya tampilan tidak bergantung pada
+   urutan query. */
 
 function buildArtistList() {
 
-    const grouped = {};
+    artistList = [...artists]
+        .sort((a, b) => b.artworks - a.artworks);
 
-    allArts.forEach(art => {
-        if (!grouped[art.artistId]) {
-            grouped[art.artistId] = {
-                id: art.artistId,
-                name: art.artist,
-                arts: []
-            };
-        }
-        grouped[art.artistId].arts.push(art);
-    });
-
-
-    artistList = Object.values(grouped)
-        .sort((a, b) => b.arts.length - a.arts.length);
-
-
-    artistList = artistList.map(artist => {
-
-        let info = staticArtists[artist.id];
-
-        if (!info) {
-
-            const myName = localStorage.getItem("profileName") || "";
-            const myPhoto = localStorage.getItem("profilePhoto") || "";
-            const bio = localStorage.getItem("profileBio") || "";
-
-            const isMe =
-                myName &&
-                myName.toLowerCase() === artist.name.toLowerCase();
-
-            const hasPhoto = myPhoto && myPhoto.trim() !== "";
-
-
-            info = {
-                name: artist.name,
-                username: "@" + artist.name.toLowerCase()
-                                .replace(/[^a-z0-9]+/g, ""),
-                bio: bio || "CreateTopia artist.",
-
-                /* Foto HANYA kalau artist = user login & punya foto */
-
-                image: (isMe && hasPhoto) ? myPhoto : ""
-            };
-        }
-
-        return { ...artist, ...info };
-    });
 }
 
 
@@ -937,7 +816,20 @@ function renderArtists() {
     const track = document.getElementById("artistTrack");
     track.innerHTML = "";
 
-    if (!artistList.length) return;
+    /* Kalau belum ada artist approved sama sekali, tampilkan
+       pesan — jangan biarkan section ini kosong tanpa alasan. */
+
+    if (!artistList.length) {
+
+        track.innerHTML = `
+            <div class="w-full py-10 text-center">
+                <p class="text-[#9b8589] text-[10px]">
+                    No artists yet.
+                </p>
+            </div>`;
+
+        return;
+    }
 
 
     artistList.forEach((artist, index) => {
@@ -960,12 +852,13 @@ function renderArtists() {
             `sectionIn .45s ease ${index * .08}s both`;
 
 
-        /* Pilih: foto atau inisial */
+        /* Pilih: foto atau inisial.
+           Nama property dari FrontendData::artists() = `photo`. */
 
-        const hasPhoto = artist.image && artist.image.trim() !== "";
+        const hasPhoto = artist.photo && artist.photo.trim() !== "";
 
         const avatarHtml = hasPhoto
-            ? `<img src="${escapeHtml(artist.image)}"
+            ? `<img src="${escapeHtml(artist.photo)}"
                     alt="${escapeHtml(artist.name)}"
                     class="artist-photo relative w-20 h-20
                            rounded-full object-cover
@@ -1010,20 +903,20 @@ function renderArtists() {
             </h3>
 
 
-            <!-- USERNAME -->
-            <p class="relative z-10 text-[8px] text-[#c83232] mt-1">
-                ${escapeHtml(artist.username)}
-            </p>
+            <!-- COUNT
+                 CATATAN: jangan pakai tanda backtick di dalam
+                 template literal JavaScript, karena backtick
+                 itu yang MENUTUP string. Nama property dari
+                 FrontendData::artists() adalah artworks
+                 (bukan arts). -->
 
-
-            <!-- COUNT -->
             <div class="relative z-10 inline-flex mt-3 px-3 py-1
                         rounded-full bg-[#e9f7f8] text-[#5eb5bf]
                         text-[8px] font-bold
                         group-hover:bg-[#72ccd2]
                         group-hover:text-white transition">
-                ${artist.arts.length}
-                artwork${artist.arts.length !== 1 ? "s" : ""}
+                ${artist.artworks}
+                artwork${artist.artworks !== 1 ? "s" : ""}
             </div>
 
 

@@ -118,23 +118,23 @@
 
     <nav class="w-full flex justify-center items-center gap-4 pt-10 pb-5">
 
-        <a href="{{ route('home') }}"
+        <a href="{{ route('user.home') }}"
            class="text-[#e05252] text-xs hover:text-[#72ccd2] transition">
             Home
         </a>
 
-        <a href="{{ route('arts') }}"
+        <a href="{{ route('user.arts') }}"
            class="text-[#e05252] text-xs hover:text-[#72ccd2] transition">
             Arts
         </a>
 
-        <a href="{{ route('artist') }}"
+        <a href="{{ route('user.artist') }}"
            class="bg-[#72ccd2] text-white px-2 py-1 rounded text-xs
                   hover:opacity-80 transition">
             Artist
         </a>
 
-        <a href="{{ route('category') }}"
+        <a href="{{ route('user.category') }}"
            class="text-[#e05252] text-xs hover:text-[#72ccd2] transition">
             Category
         </a>
@@ -367,22 +367,19 @@ function getInitialAvatar(nama) {
 
 function getArtistAvatarHtml(artist) {
 
-    const myName = localStorage.getItem("profileName") || "";
-    const myPhoto = localStorage.getItem("profilePhoto") || "";
+    /* Foto artist sekarang diambil dari database: artist.photo */
 
-    const isMe =
-        myName &&
-        myName.toLowerCase() === (artist.name || "").toLowerCase();
+    const photo = artist.photo || "";
 
-    const hasPhoto = myPhoto && myPhoto.trim() !== "";
+    const hasPhoto = photo && photo.trim() !== "";
 
 
-    /* Artist = user login & punya foto → pakai foto */
+    /* Artist punya foto → pakai foto */
 
-    if (isMe && hasPhoto) {
+    if (hasPhoto) {
         return `
-            <img src="${myPhoto}"
-                 alt="${artist.name}"
+            <img src="${escapeHtml(photo)}"
+                 alt="${escapeHtml(artist.name || '')}"
                  class="artist-image w-[125px] h-[125px]
                         object-cover rounded-full
                         border-4 border-white shadow-md">
@@ -402,148 +399,25 @@ function getArtistAvatarHtml(artist) {
 
 
 /* ==========================================
-   STATIC ARTIST DATA
-========================================== */
+   ARTIST DATA — DARI DATABASE
+==========================================
+   Data dikirim oleh ProfileController@artist() lewat
+   FrontendData::artists(), jadi di sini TIDAK PERLU
+   tahu nama kolom aslinya (id_user, foto_profil, ...).
 
-const staticArtistList = [
+   Bentuk item yang dipakai renderArtists() di bawah:
+   {
+       id, name, bio, photo, artworks, date
+   }
 
-    {
-        id: "leonardo",
-        name: "Leonardo da Vinci",
-        username: "@leonardodavinci",
-        bio: "Italian Renaissance artist known for some of the most influential artworks in Western art.",
-        artworks: 3,
-        date: "2026-08-01"
-    },
+   CATATAN: tidak ada `username`. Project ini tidak memakai
+   username, jadi jangan ditambah lagi.
 
-    {
-        id: "botticelli",
-        name: "Sandro Botticelli",
-        username: "@sandrobotticelli",
-        bio: "Italian Renaissance painter known for elegant mythological and religious compositions.",
-        artworks: 1,
-        date: "2026-08-05"
-    },
+   Kalau nanti butuh ubah bentuk data ini, ubah di
+   app/Support/FrontendData.php — bukan di file ini.
+========================================= */
 
-    {
-        id: "michelangelo",
-        name: "Michelangelo",
-        username: "@michelangelo",
-        bio: "Italian Renaissance artist, sculptor, painter and architect.",
-        artworks: 1,
-        date: "2026-08-10"
-    },
-
-    {
-        id: "titian",
-        name: "Titian",
-        username: "@titian",
-        bio: "Italian Renaissance painter known for his expressive use of color.",
-        artworks: 1,
-        date: "2026-08-12"
-    },
-
-    {
-        id: "blake",
-        name: "William Blake",
-        username: "@williamblake",
-        bio: "English poet, painter and printmaker whose work combined art and literature.",
-        artworks: 1,
-        date: "2026-08-15"
-    },
-
-    {
-        id: "delacroix",
-        name: "Eugène Delacroix",
-        username: "@delacroix",
-        bio: "French Romantic artist known for dramatic compositions and expressive color.",
-        artworks: 1,
-        date: "2026-08-20"
-    },
-
-    {
-        id: "bruegel",
-        name: "Pieter Bruegel",
-        username: "@pieterbruegel",
-        bio: "Dutch Renaissance painter known for detailed landscapes and scenes of everyday life.",
-        artworks: 1,
-        date: "2026-08-22"
-    }
-
-];
-
-
-
-/* ==========================================
-   LOAD USER ARTS → BUILD USER ARTIST LIST
-========================================== */
-
-let userArts = [];
-
-try {
-    userArts = JSON.parse(localStorage.getItem("userArts") || "[]");
-    if (!Array.isArray(userArts)) userArts = [];
-} catch (e) { userArts = []; }
-
-
-const profileName = localStorage.getItem("profileName") || "";
-
-
-function buildUserArtistList() {
-
-    const grouped = {};
-
-    userArts.forEach(art => {
-
-        const creator =
-            art.creator ||
-            art.artist ||
-            profileName ||
-            "Unknown Artist";
-
-        const id =
-            "user-" + creator.toLowerCase()
-                .replace(/[^a-z0-9]+/g, "-")
-                .replace(/^-|-$/g, "");
-
-        if (!grouped[id]) {
-            grouped[id] = {
-                id: id,
-                name: creator,
-                username: "@" + creator.toLowerCase()
-                    .replace(/\s+/g, ""),
-                bio: "CreateTopia artist.",
-                artworks: 0,
-                date: art.date || new Date().toISOString()
-            };
-        }
-
-        grouped[id].artworks++;
-
-
-        /* Update date ke yang paling baru */
-
-        const artDate = new Date(art.date || 0).getTime();
-        const curDate = new Date(grouped[id].date || 0).getTime();
-
-        if (artDate > curDate) {
-            grouped[id].date = art.date;
-        }
-    });
-
-    return Object.values(grouped);
-}
-
-
-
-/* ==========================================
-   MERGE STATIC + USER ARTISTS
-========================================== */
-
-let artists = [
-    ...staticArtistList,
-    ...buildUserArtistList()
-];
+let artists = @json($artists);
 
 
 
@@ -581,9 +455,9 @@ function renderArtists() {
         .value.toLowerCase().trim();
 
 
+    /* Pencarian hanya berdasarkan nama (tidak ada username). */
     let filtered = artists.filter(artist =>
-        artist.name.toLowerCase().includes(search) ||
-        artist.username.toLowerCase().includes(search)
+        artist.name.toLowerCase().includes(search)
     );
 
 
@@ -613,17 +487,29 @@ function renderArtists() {
     document.getElementById("emptyArtist").classList.add("hidden");
 
 
-    const visibleCount = getVisibleCount();
+    /* JUMLAH KARTU YANG BOLEH MUNCUL SEKALI
+       ------------------------------------------------
+       PENTING: jangan pernah menampilkan artist yang sama
+       dua kali. Kalau layout muat 4 kartu tapi database
+       cuma punya 1 artist, kita tetap tampilkan 1 kartu.
+
+       Karena itu pakai Math.min(...): jumlah kartu tidak
+       boleh lebih dari jumlah artist yang tersedia. */
+    const visibleCount = Math.min(
+        getVisibleCount(),
+        filtered.length
+    );
 
     if (currentStart >= filtered.length) currentStart = 0;
 
 
+    /* Ambil `visibleCount` artist, mulai dari currentStart.
+       Karena visibleCount <= filtered.length, tiap artist
+       pasti unik — tidak ada duplikat. */
     let visibleArtists = [];
 
     for (let i = 0; i < visibleCount; i++) {
-        if (filtered.length === 0) break;
-        const index = (currentStart + i) % filtered.length;
-        visibleArtists.push(filtered[index]);
+        visibleArtists.push(filtered[(currentStart + i) % filtered.length]);
     }
 
 
@@ -679,11 +565,6 @@ function renderArtists() {
                     <span class="text-[#72ccd2] text-[10px]">✦</span>
 
                 </div>
-
-
-                <p class="text-[#72ccd2] text-[8px] mt-1">
-                    ${escapeHtml(artist.username)}
-                </p>
 
 
                 <p class="text-[9px] leading-[13px] text-gray-500

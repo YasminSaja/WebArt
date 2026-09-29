@@ -1382,6 +1382,20 @@
                 </label>
 
 
+                {{--
+                    Opsi dropdown diambil dari tabel `kategoris`
+                    (dikirim controller sebagai $categories).
+
+                    Dulu hanya ada 2 opsi yang ditulis manual
+                    ("Digital" dan "Traditional"), padahal
+                    database punya 7 kategori. Akibatnya karya
+                    dengan kategori lain (mis. "Sculpture")
+                    tidak bisa dipilih, dan kode
+                    .value = art.category yang tidak ada di
+                    dalam daftar opsi akan DIABAIKAN diam-diam
+                    sehingga dropdown tampak "melompat" ke
+                    kategori yang salah.
+                --}}
                 <select
                     id="editCategory"
                     class="w-full
@@ -1396,13 +1410,20 @@
                            mb-7"
                 >
 
-                    <option value="Digital">
-                        Digital
-                    </option>
+                    @forelse ($categories as $category)
 
-                    <option value="Traditional">
-                        Traditional
-                    </option>
+                        <option
+                            value="{{ $category->nama_kategori }}">
+                            {{ $category->nama_kategori }}
+                        </option>
+
+                    @empty
+
+                        <option value="">
+                            No category yet
+                        </option>
+
+                    @endforelse
 
                 </select>
 
@@ -1629,33 +1650,26 @@
 
 
         // =================================================
-        // PROFILE DATA
+        // PROFILE DATA — DARI DATABASE
         // =================================================
         //
-        // DATABASE NANTI:
+        // $user dikirim oleh ProfileController@show() lewat
+        // FrontendData::profileUser(). Isinya:
         //
-        // Bagian ini nantinya tidak perlu localStorage.
+        //     { name, bio, photo }
         //
-        // Contohnya nanti Laravel:
+        // -> name  = kolom `name` di tabel users
+        // -> bio   = kolom `bio`
+        // -> photo = foto_profil, sudah jadi URL
         //
-        // $user->name
-        // $user->bio
-        // $user->profile_photo
+        // Kalau user belum isi bio, FrontendData sudah
+        // memberi teks cadangan, jadi di sini tidak perlu
+        // cek null lagi.
         //
         // =================================================
 
 
-        const savedName =
-            localStorage.getItem("profileName");
-
-
-        const savedBio =
-            localStorage.getItem("profileBio");
-
-
-        const savedPhoto =
-            localStorage.getItem("profilePhoto");
-
+        const currentUser = @json($user);
 
 
         // =================================================
@@ -1663,14 +1677,15 @@
         // =================================================
 
         if (
-            savedName &&
-            savedName.trim() !== ""
+            currentUser &&
+            currentUser.name &&
+            currentUser.name.trim() !== ""
         ) {
 
             document
                 .getElementById("profileName")
                 .textContent =
-                savedName;
+                currentUser.name;
 
         }
 
@@ -1681,14 +1696,15 @@
         // =================================================
 
         if (
-            savedBio &&
-            savedBio.trim() !== ""
+            currentUser &&
+            currentUser.bio &&
+            currentUser.bio.trim() !== ""
         ) {
 
             document
                 .getElementById("profileBio")
                 .textContent =
-                savedBio;
+                currentUser.bio;
 
         }
 
@@ -1698,7 +1714,7 @@
         // TAMPILKAN FOTO PROFILE
         // =================================================
 
-        if (savedPhoto) {
+        if (currentUser && currentUser.photo) {
 
             const image =
                 document.getElementById(
@@ -1713,7 +1729,7 @@
 
 
             image.src =
-                savedPhoto;
+                currentUser.photo;
 
 
             image.classList.remove(
@@ -1730,26 +1746,22 @@
 
 
         // =================================================
-        // USER ARTS
+        // USER ARTS — DARI DATABASE
         // =================================================
         //
-        // DATABASE NANTI:
+        // $arts dikirim oleh ProfileController@show() lewat
+        // FrontendData::arts(). Bentuk tiap item:
         //
-        // Ganti localStorage ini dengan:
+        //     { id, title, description, image,
+        //       artist, artistId, artistPhoto, category, date }
         //
-        // $user->arts
-        //
-        // atau Controller + Model Art.
+        // Kalau nanti butuh ubah bentuk data ini, ubah di
+        // app/Support/FrontendData.php — bukan di file ini.
         //
         // =================================================
 
 
-        let userArts =
-            JSON.parse(
-                localStorage.getItem(
-                    "userArts"
-                ) || "[]"
-            );
+        let userArts = @json($arts);
 
 
         const artsContainer =
@@ -2092,10 +2104,16 @@
             // =========================================
             // CREATOR
             // =========================================
+            //
+            // CATATAN: dulu baris ini memakai `savedName`,
+            // tapi variabel itu tidak pernah dideklarasikan
+            // di file ini, jadi Chrome hasilnya:
+            //     ReferenceError: savedName is not defined
+            // FrontendData sudah memberi `art.artist` sebagai
+            // nama pembuat karya, jadi cukup pakai itu.
 
             const creator =
-                art.creator ||
-                savedName ||
+                art.artist ||
                 "Unknown Artist";
 
 
@@ -2332,13 +2350,24 @@
                 art.description || "";
 
 
-            document
-                .getElementById(
-                    "editCategory"
-                )
-                .value =
-                art.category ||
-                "Digital";
+            /* Pilih kategori yang sedang dipakai karya ini.
+
+               Di sini nilai <option> adalah NAMA kategori
+               (bukan id), jadi cocok dengan art.category
+               yang dikirim FrontendData::art().
+
+               Kalau nama kategori tidak ada di daftar opsi,
+               .value diisi string kosong supaya select
+               menampilkan kategori pertama, bukan diam-diam
+               menampilkan kategori yang salah. */
+            const editCategorySelect =
+                document.getElementById("editCategory");
+
+            editCategorySelect.value =
+                Array.from(editCategorySelect.options)
+                    .some(o => o.value === art.category)
+                        ? art.category
+                        : "";
 
 
             document
@@ -2544,13 +2573,17 @@
 
         function finishSaveArt() {
 
-            localStorage.setItem(
-                "userArts",
-                JSON.stringify(
-                    userArts
-                )
-            );
-
+            // TODO: simpan ke database, lalu reload halaman
+            // supaya data kembali dari server.
+            // Contoh:
+            //     fetch('{{ route('profile.art.store') }}', {
+            //         method: 'POST',
+            //         headers: {
+            //             'Content-Type': 'application/json',
+            //             'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            //         },
+            //         body: JSON.stringify(artPayload)
+            //     }).then(() => window.location.reload());
 
             closeEditArt();
 
@@ -2752,13 +2785,12 @@
             );
 
 
-            localStorage.setItem(
-                "userArts",
-                JSON.stringify(
-                    userArts
-                )
-            );
-
+            // TODO: hapus juga di database, lalu reload halaman.
+            // Contoh:
+            //     fetch(`/profile/arts/${deletedId}`, {
+            //         method: 'DELETE',
+            //         headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+            //     }).then(() => window.location.reload());
 
             closeArtSettings();
 
@@ -2836,19 +2868,16 @@
         // RESET PROFILE + ALL ARTS
         // =================================================
         //
-        // INI AKAN MENGHAPUS:
+        // Data dummy dari localStorage sudah dihapus.
         //
-        // - Nama
-        // - Bio
-        // - Foto Profile
-        // - Semua Arts
+        // Data reset harus dikirim ke server, karena data profil
+        // & karya sudah ada di database.
+        // Contoh:
         //
-        // DATABASE NANTI:
-        //
-        // Tidak pakai localStorage lagi.
-        // Nantinya Controller Laravel
-        // akan menghapus/update data user
-        // dan arts miliknya.
+        //     fetch('/profile/reset', {
+        //         method: 'DELETE',
+        //         headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+        //     }).then(() => window.location.reload());
         //
         // =================================================
 
@@ -2856,35 +2885,11 @@
 
             const confirmReset =
                 confirm(
-                    "Reset profile dan semua art?\n\nSemua data profile dan karya yang tersimpan di browser akan dihapus."
+                    "Reset profile dan semua art?\n\nSemua data profile dan karya akan dihapus."
                 );
 
 
             if (!confirmReset) return;
-
-
-            // Hapus profile
-
-            localStorage.removeItem(
-                "profileName"
-            );
-
-
-            localStorage.removeItem(
-                "profileBio"
-            );
-
-
-            localStorage.removeItem(
-                "profilePhoto"
-            );
-
-
-            // Hapus semua arts
-
-            localStorage.removeItem(
-                "userArts"
-            );
 
 
             // Refresh
@@ -2899,11 +2904,8 @@
         // LOGOUT
         // =================================================
         //
-        // DATABASE NANTI:
-        //
-        // Nanti diganti dengan:
-        //
-        // Laravel Auth::logout()
+        // Ganti dengan AuthController@logout(),
+        // atau form POST ke route logout.
         //
         // =================================================
 
@@ -2916,18 +2918,6 @@
 
 
             if (!confirmLogout) return;
-
-
-            // Hapus login sementara
-
-            localStorage.removeItem(
-                "createopiaRole"
-            );
-
-
-            localStorage.removeItem(
-                "createopiaEmail"
-            );
 
 
             // Masuk kembali ke login

@@ -167,14 +167,6 @@
 
                             </p>
 
-                            <p id="creatorUsername"
-                               class="sans text-[10px]
-                                      text-[#2a1a1c]/50">
-
-                                @username
-
-                            </p>
-
                         </div>
 
                     </a>
@@ -218,112 +210,23 @@
 <script>
 
 /* =====================================================
-   STATIC ARTS
+   ART DATA — DARI DATABASE
+=====================================================
+   $art dikirim oleh KaryaController@show() lewat
+   FrontendData::art(), jadi di sini TIDAK PERLU tahu
+   nama kolom aslinya (judul, file_gambar, ...).
+
+   Bentuk item yang dipakai renderArt() di bawah:
+   {
+       id, title, description, image,
+       artist, artistId, artistPhoto, category, date
+   }
+
+   Kalau nanti butuh ubah bentuk data ini, ubah di
+   app/Support/FrontendData.php — bukan di file ini.
 ===================================================== */
 
-const staticArts = [
-    { id: 1, title: "Mona Lisa",
-      description: "Probably the most famous painting in the world is Leonardo da Vinci's La Gioconda, better known as Mona Lisa.",
-      image: "{{ asset('images/arts/mona-lisa.jpg') }}",
-      artist: "Leonardo da Vinci", artistId: "leonardo",
-      category: "Traditional", date: "1503-01-01" },
-
-    { id: 2, title: "The Birth of Venus",
-      description: "Another of the most famous paintings is The Birth of Venus. Botticelli's painting illustrates the myth of the birth of Aphrodite.",
-      image: "{{ asset('images/arts/birth-of-venus.jpg') }}",
-      artist: "Sandro Botticelli", artistId: "botticelli",
-      category: "Traditional", date: "1485-01-01" },
-
-    { id: 3, title: "The Creation Of Adam",
-      description: "Michelangelo's fresco The Creation of Adam, which adorns the ceiling of the Sistine Chapel.",
-      image: "{{ asset('images/arts/creation-of-adam.jpg') }}",
-      artist: "Michelangelo", artistId: "michelangelo",
-      category: "Traditional", date: "1512-01-01" },
-
-    { id: 4, title: "The Last Supper",
-      description: "For more than 500 years of its existence, the famous fresco The Last Supper has been restored at least five times.",
-      image: "{{ asset('images/arts/last-supper.jpg') }}",
-      artist: "Leonardo da Vinci", artistId: "leonardo",
-      category: "Traditional", date: "1498-01-01" },
-
-    { id: 5, title: "The Sacred and Profane Love",
-      description: "The current name of the painting was not given by Titian himself, but appeared only two centuries later.",
-      image: "{{ asset('images/arts/sacred-love.jpg') }}",
-      artist: "Titian", artistId: "titian",
-      category: "Traditional", date: "1514-01-01" },
-
-    { id: 6, title: "The Ancient of Days",
-      description: "This popular artwork by William Blake is now in the British Museum, London.",
-      image: "{{ asset('images/arts/ancient-days.jpg') }}",
-      artist: "William Blake", artistId: "blake",
-      category: "Traditional", date: "1794-01-01" },
-
-    { id: 7, title: "Liberty Leading the People",
-      description: "Liberty Leading the People by Eugene Delacroix is one of the best known examples of Romantic painting.",
-      image: "{{ asset('images/arts/liberty-leading.jpg') }}",
-      artist: "Eugène Delacroix", artistId: "delacroix",
-      category: "Traditional", date: "1830-01-01" },
-
-    { id: 8, title: "The Madonna Litta",
-      description: "This masterpiece, a world classic long ago, is kept in the Hermitage in St. Petersburg.",
-      image: "{{ asset('images/arts/madonna-litta.jpg') }}",
-      artist: "Leonardo da Vinci", artistId: "leonardo",
-      category: "Traditional", date: "1490-01-01" },
-
-    { id: 9, title: "Landscape with the Fall of Icarus",
-      description: "This painting, by Dutch artist Pieter Bruegel, is now part of the collection.",
-      image: "{{ asset('images/arts/landscape-icarus.jpg') }}",
-      artist: "Pieter Bruegel", artistId: "bruegel",
-      category: "Traditional", date: "1560-01-01" }
-];
-
-
-
-/* =====================================================
-   LOAD USER ARTS
-===================================================== */
-
-let userArts = [];
-
-try {
-    userArts = JSON.parse(localStorage.getItem("userArts") || "[]");
-    if (!Array.isArray(userArts)) userArts = [];
-} catch (e) { userArts = []; }
-
-
-
-/* =====================================================
-   CONVERT USER ARTS
-===================================================== */
-
-const convertedUserArts = userArts.map((art, index) => {
-
-    const creator =
-        art.creator ||
-        localStorage.getItem("profileName") ||
-        "Unknown Artist";
-
-    const artistId =
-        "user-" +
-        creator.toLowerCase()
-            .replace(/[^a-z0-9]+/g, "-")
-            .replace(/^-|-$/g, "");
-
-    return {
-        id: "user-" + (art.id !== undefined ? art.id : index),
-        title: art.title || "Untitled",
-        description: art.description || "No description available.",
-        image: art.image || "",
-        artist: creator,
-        artistId: artistId,
-        category: art.category || "Digital",
-        date: art.date || new Date().toISOString()
-    };
-});
-
-
-
-const allArts = [...staticArts, ...convertedUserArts];
+const allArts = @json([$art]);
 
 
 
@@ -396,8 +299,6 @@ function renderArt() {
     /* CREATOR */
 
     document.getElementById("creatorName").textContent = art.artist;
-    document.getElementById("creatorUsername").textContent =
-        "@" + art.artist.toLowerCase().replace(/\s+/g, "");
 
     document.getElementById("creatorLink").href =
         "{{ url('/artist') }}/" + encodeURIComponent(art.artistId);
@@ -405,31 +306,27 @@ function renderArt() {
 
 
     /* =====================================================
-       AVATAR CREATOR — SIMPEL
-       Kalau artist = user login & punya foto → tampil foto
-       Kalau bukan → inisial nama
+       AVATAR CREATOR
+       Kalau artist punya foto (dari database) → tampil foto
+       Kalau belum ada → inisial nama
     ===================================================== */
 
     const avatarBox = document.getElementById("creatorAvatar");
 
-    const myName = localStorage.getItem("profileName") || "";
-    const myPhoto = localStorage.getItem("profilePhoto") || "";
+    /* Foto artist diambil dari database: art.artistPhoto */
 
-    const isMe =
-        myName &&
-        myName.toLowerCase() === art.artist.toLowerCase();
+    const photo = art.artistPhoto || "";
 
-    const hasPhoto =
-        myPhoto && myPhoto.trim() !== "";
+    const hasPhoto = photo && photo.trim() !== "";
 
 
-    if (isMe && hasPhoto) {
+    if (hasPhoto) {
 
         /* Tampil foto profil */
 
         avatarBox.style.background = "transparent";
         avatarBox.innerHTML = `
-            <img src="${myPhoto}"
+            <img src="${photo}"
                  alt="${art.artist}"
                  class="w-full h-full object-cover">
         `;

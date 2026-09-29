@@ -167,14 +167,19 @@
                     Login
                 </h1>
 
-                <form id="loginForm" class="w-full">
+                <form id="loginForm"
+                      method="POST"
+                      action="{{ route('login') }}"
+                      class="w-full">
+
+                    @csrf
 
                     <label for="email"
                            class="block text-[#c83232] text-[9px] mb-1">
                         Email
                     </label>
 
-                    <input id="email" type="email" placeholder="Type here"
+                    <input id="email" name="email" type="email" placeholder="Type here"
                            autocomplete="email"
                            class="login-input w-full h-[20px] rounded-full
                                   border border-[#cbb8b8] bg-[#eadada]
@@ -187,7 +192,7 @@
                         Password
                     </label>
 
-                    <input id="password" type="password" placeholder="Type here"
+                    <input id="password" name="password" type="password" placeholder="Type here"
                            autocomplete="current-password"
                            class="login-input w-full h-[20px] rounded-full
                                   border border-[#cbb8b8] bg-[#eadada]
@@ -199,7 +204,7 @@
                            class="flex items-center gap-2 cursor-pointer
                                   select-none mb-5 w-fit">
 
-                        <input id="remember" type="checkbox"
+                        <input id="remember" name="remember" type="checkbox"
                                class="remember-checkbox">
 
                         <span class="text-[#c83232] text-[9px]
@@ -299,36 +304,59 @@
     <script>
 
         /* =====================================================
-           ADMIN CREDENTIALS (dummy)
+           LOGIN — SUDAH BERSIH DARI DATA DUMMY
+        =====================================================
+           Yang sudah dihapus:
+             - kredensial admin hardcoded (admin@gmail.com / admin123)
+             - pengecekan user lewat localStorage.pendingUsers
+             - penyimpanan role/email ke localStorage
+
+           Untuk menyambungkan ke database, aktifkan route di
+           routes/web.php lalu pilih salah satu cara:
+
+           CARA 1 — form biasa (paling sederhana).
+           Ubah <form id="loginForm"> jadi:
+
+               <form id="loginForm" method="POST"
+                     action="{{ route('login') }}">
+                   @csrf
+                   <input name="email" ...>
+                   <input name="password" ...>
+                   <input name="remember" type="checkbox" value="1">
+
+           lalu HAPUS seluruh blok "LOGIN FORM SUBMIT" di bawah
+           supaya form dikirim normal ke server.
+
+           CARA 2 — tetap pakai JavaScript, kirim dengan fetch:
+
+               fetch('{{ route('login') }}', {
+                   method: 'POST',
+                   headers: {
+                       'Content-Type': 'application/json',
+                       'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                   },
+                   body: JSON.stringify({ email, password, remember })
+               })
+               .then(r => r.json())
+               .then(data => {
+                   if (data.success) {
+                       window.location.href = data.redirect;
+                   } else {
+                       showError('emailError', data.message);
+                   }
+               });
+
+           AuthController@login() sudah siap di
+           app/Http/Controllers/AuthController.php.
         ===================================================== */
-
-        const ADMIN_EMAIL    = 'admin@gmail.com';
-        const ADMIN_PASSWORD = 'admin123';
-
-
-        /* =====================================================
-           REMEMBER ME — AUTO FILL
-        ===================================================== */
-
-        document.addEventListener('DOMContentLoaded', function () {
-
-            const savedEmail =
-                localStorage.getItem('createopiaRememberEmail');
-
-            const rememberCheckbox =
-                document.getElementById('remember');
-
-            if (savedEmail) {
-                document.getElementById('email').value = savedEmail;
-                rememberCheckbox.checked = true;
-            }
-
-        });
 
 
 
         /* =====================================================
            LOGIN FORM SUBMIT
+           Saat ini hanya validasi sisi browser. Belum ada
+           permintaan ke server — lihat blok komentar di atas
+           untuk cara menyambungkannya ke AuthController@login.
         ===================================================== */
 
         document.getElementById('loginForm')
@@ -351,155 +379,29 @@
             const password =
                 document.getElementById('password').value.trim();
 
-            const remember =
-                document.getElementById('remember').checked;
 
+            /* Validasi dasar (tetap di browser) */
 
-            if (!email || !password) return;
+            if (!email || !password) {
 
+                showError('emailError', 'Email dan password wajib diisi.');
 
-            /* Debug log */
-
-            console.log('=== LOGIN ATTEMPT ===');
-            console.log('Email   :', email);
-            console.log('Password:', password);
-            console.log('Match admin?',
-                email === ADMIN_EMAIL,
-                password === ADMIN_PASSWORD
-            );
-
-
-            /* Remember me */
-
-            if (remember) {
-                localStorage.setItem('createopiaRememberEmail', email);
-            } else {
-                localStorage.removeItem('createopiaRememberEmail');
+                return;
             }
 
+
+            /* TODO: kirim ke server, lalu arahkan sesuai status akun.
+               lihat blok komentar "LOGIN — SUDAH BERSIH DARI DATA DUMMY"
+               di atas untuk contoh kode fetch(). */
 
             /* ==========================================
-               ADMIN CHECK
-            ========================================== */
+               KIRIM KE SERVER
+            ==========================================
+               Pakai submit() native supaya handler ini
+               tidak menahan pengiriman. Form sudah punya
+               action, method, dan @csrf di atas. */
 
-            if (
-                email === ADMIN_EMAIL &&
-                password === ADMIN_PASSWORD
-            ) {
-
-                console.log('✓ Admin login success');
-
-                localStorage.setItem('createopiaRole', 'admin');
-                localStorage.setItem('createopiaEmail', email);
-
-                window.location.href = "{{ route('admin') }}";
-                return;
-            }
-
-
-            /* ==========================================
-               CEK PENGGUNA DI pendingUsers (dummy)
-            ========================================== */
-
-            const pendingUsers = getPendingUsers();
-
-            console.log('pendingUsers count:', pendingUsers.length);
-
-
-            const user = pendingUsers.find(u =>
-                u.email.toLowerCase() === email
-            );
-
-
-            /* ==========================================
-               EMAIL BELUM TERDAFTAR
-            ========================================== */
-
-            if (!user) {
-
-                /* Kalau emailnya mengandung 'admin', kasih hint */
-
-                if (email.includes('admin')) {
-
-                    showError('passwordError',
-                        'Hint: password admin adalah "admin123".');
-
-                    return;
-                }
-
-                showError('emailError',
-                    'Email belum terdaftar. Silakan daftar dulu.');
-
-                return;
-            }
-
-
-            /* ==========================================
-               PASSWORD SALAH
-            ========================================== */
-
-            if (user.password !== password) {
-
-                showError('passwordError', 'Password salah.');
-                return;
-            }
-
-
-            /* ==========================================
-               CEK STATUS AKUN
-            ========================================== */
-
-            if (user.status === 'pending') {
-
-                showStatusModal({
-                    icon: '⏳',
-                    title: 'Menunggu Approval',
-                    message:
-                        'Akun kamu masih ditinjau oleh admin. ' +
-                        'Kamu akan bisa login setelah akun disetujui.',
-                    primaryText: 'Lihat Status',
-                    primaryHref:
-                        "{{ url('/pending-approval') }}" +
-                        '?email=' + encodeURIComponent(email),
-                    bgIcon: '#FFDE96'
-                });
-
-                return;
-            }
-
-
-            if (user.status === 'rejected') {
-
-                const alasan = user.rejectionReason ||
-                    'Tidak ada alasan yang diberikan.';
-
-                showStatusModal({
-                    icon: '✕',
-                    title: 'Akun Ditolak',
-                    message:
-                        'Maaf, akun kamu belum bisa disetujui.<br><br>' +
-                        '<b>Alasan:</b><br>' + alasan,
-                    primaryText: 'Hubungi Admin',
-                    primaryHref: 'mailto:admin@createtopia.com',
-                    bgIcon: '#FA855A'
-                });
-
-                return;
-            }
-
-
-            if (user.status === 'approved') {
-
-                localStorage.setItem('createopiaRole', 'artist');
-                localStorage.setItem('createopiaEmail', email);
-                localStorage.setItem('profileName', user.nama || 'Artist');
-
-                window.location.href = "{{ route('user.home') }}";
-                return;
-            }
-
-
-            showError('emailError', 'Status akun tidak dikenali.');
+            event.target.submit();
 
         });
 
@@ -508,21 +410,6 @@
         /* =====================================================
            HELPERS
         ===================================================== */
-
-        function getPendingUsers() {
-
-            try {
-
-                const data = JSON.parse(
-                    localStorage.getItem('pendingUsers') || '[]'
-                );
-
-                return Array.isArray(data) ? data : [];
-
-            } catch (e) { return []; }
-
-        }
-
 
         function showError(id, message) {
 
@@ -562,6 +449,52 @@
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') closeStatusModal();
         });
+
+
+        /* =====================================================
+           PESAN DARI SERVER
+           AuthController@login() mengirim balik ke halaman ini
+           kalau email/password salah atau akun ditolak.
+        ===================================================== */
+
+        @if (session('login_rejected'))
+
+            showStatusModal({
+                icon: '✕',
+                title: 'Akun Ditolak',
+                message: 'Akunmu ditolak. Silakan hubungi admin.',
+                primaryText: 'Daftar Lagi',
+                primaryHref: "{{ route('register') }}",
+                bgIcon: '#FFC9C9'
+            });
+
+        @endif
+
+        @if ($errors->has('email') || $errors->has('password'))
+
+            showError('emailError',
+                "{{ $errors->first('email') ?: $errors->first('password') }}");
+
+        @endif
+
+        @if (session('success'))
+
+            showStatusModal({
+                icon: '✓',
+                title: 'Berhasil',
+                message: "{{ session('success') }}",
+                primaryText: 'Login',
+                primaryHref: "{{ route('login') }}",
+                bgIcon: '#C9F5D4'
+            });
+
+        @endif
+
+        @if (old('email'))
+
+            document.getElementById('email').value = "{{ old('email') }}";
+
+        @endif
 
     </script>
 

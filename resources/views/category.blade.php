@@ -314,21 +314,16 @@
                 All
             </button>
 
-            <button id="traditionalBtn"
-                    onclick="changeCategory('Traditional')"
-                    class="filter-btn px-5 py-1.5 rounded-full
-                           text-[9px] bg-white border border-gray-300
-                           text-gray-500">
-                Traditional
-            </button>
-
-            <button id="digitalBtn"
-                    onclick="changeCategory('Digital')"
-                    class="filter-btn px-5 py-1.5 rounded-full
-                           text-[9px] bg-white border border-gray-300
-                           text-gray-500">
-                Digital
-            </button>
+            {{-- Tombol kategori di bawah ini dari database ($categories). --}}
+            @foreach ($categories ?? [] as $category)
+                <button id="categoryBtn{{ $category->id_kategori }}"
+                        onclick="changeCategory(@js($category->nama_kategori))"
+                        class="filter-btn px-5 py-1.5 rounded-full
+                               text-[9px] bg-white border border-gray-300
+                               text-gray-500">
+                    {{ $category->nama_kategori }}
+                </button>
+            @endforeach
 
         </div>
 
@@ -581,22 +576,19 @@ function getInitialAvatar(nama) {
 
 function getArtistAvatarHtml(art) {
 
-    const myName = localStorage.getItem("profileName") || "";
-    const myPhoto = localStorage.getItem("profilePhoto") || "";
+    /* Foto artist sekarang diambil dari database: art.artistPhoto */
 
-    const isMe =
-        myName &&
-        myName.toLowerCase() === (art.artist || "").toLowerCase();
+    const photo = art.artistPhoto || "";
 
-    const hasPhoto = myPhoto && myPhoto.trim() !== "";
+    const hasPhoto = photo && photo.trim() !== "";
 
 
-    /* Artist = user login & punya foto → pakai foto */
+    /* Artist punya foto → pakai foto */
 
-    if (isMe && hasPhoto) {
+    if (hasPhoto) {
         return `
-            <img src="${myPhoto}"
-                 alt="${art.artist}"
+            <img src="${escapeHtml(photo)}"
+                 alt="${escapeHtml(art.artist || '')}"
                  class="w-10 h-10 rounded-full object-cover
                         border-2 border-white shadow-md">
         `;
@@ -611,134 +603,29 @@ function getArtistAvatarHtml(art) {
 
 
 /* =====================================================
-   STATIC ARTS
+   ART DATA — DARI DATABASE
+=====================================================
+   Data dikirim oleh CategoryController@index() lewat
+   FrontendData::arts(), jadi di sini TIDAK PERLU tahu
+   nama kolom aslinya (judul, file_gambar, ...).
+
+   Bentuk item yang dipakai updatePage() & renderArts():
+   {
+       id, title, description, image,
+       artist, artistId, artistPhoto, category, date
+   }
+
+   categoryList dipakai untuk menandai tombol kategori
+   mana yang sedang aktif. Tombolnya sendiri sudah
+   dirender Blade pakai $categories (lihat di atas).
+
+   Kalau nanti butuh ubah bentuk data ini, ubah di
+   app/Support/FrontendData.php — bukan di file ini.
 ===================================================== */
 
-const staticArts = [
-    { id: 1, title: "Mona Lisa",
-      description: "Probably the most famous painting in the world is Leonardo da Vinci's La Gioconda, better known as Mona Lisa.",
-      image: "{{ asset('images/arts/mona-lisa.jpg') }}",
-      artist: "Leonardo da Vinci", artistId: "leonardo",
-      category: "Traditional", date: "1503-01-01" },
+const allArts = @json($arts);
 
-    { id: 2, title: "The Birth of Venus",
-      description: "Another of the most famous paintings is The Birth of Venus. Botticelli's painting illustrates the myth of the birth of Aphrodite.",
-      image: "{{ asset('images/arts/birth-of-venus.jpg') }}",
-      artist: "Sandro Botticelli", artistId: "botticelli",
-      category: "Traditional", date: "1485-01-01" },
-
-    { id: 3, title: "The Creation Of Adam",
-      description: "Michelangelo's fresco The Creation of Adam, which adorns the ceiling of the Sistine Chapel.",
-      image: "{{ asset('images/arts/creation-of-adam.jpg') }}",
-      artist: "Michelangelo", artistId: "michelangelo",
-      category: "Traditional", date: "1512-01-01" },
-
-    { id: 4, title: "The Last Supper",
-      description: "For more than 500 years of its existence, the famous fresco The Last Supper has been restored at least five times.",
-      image: "{{ asset('images/arts/last-supper.jpg') }}",
-      artist: "Leonardo da Vinci", artistId: "leonardo",
-      category: "Traditional", date: "1498-01-01" },
-
-    { id: 5, title: "The Sacred and Profane Love",
-      description: "The current name of the painting was not given by Titian himself, but appeared only two centuries later.",
-      image: "{{ asset('images/arts/sacred-love.jpg') }}",
-      artist: "Titian", artistId: "titian",
-      category: "Traditional", date: "1514-01-01" },
-
-    { id: 6, title: "The Ancient of Days",
-      description: "This popular artwork by William Blake is now in the British Museum, London.",
-      image: "{{ asset('images/arts/ancient-days.jpg') }}",
-      artist: "William Blake", artistId: "blake",
-      category: "Traditional", date: "1794-01-01" },
-
-    { id: 7, title: "Liberty Leading the People",
-      description: "Liberty Leading the People by Eugene Delacroix is one of the best known examples of Romantic painting.",
-      image: "{{ asset('images/arts/liberty-leading.jpg') }}",
-      artist: "Eugène Delacroix", artistId: "delacroix",
-      category: "Traditional", date: "1830-01-01" },
-
-    { id: 8, title: "The Madonna Litta",
-      description: "This masterpiece, a world classic long ago, is kept in the Hermitage in St. Petersburg.",
-      image: "{{ asset('images/arts/madonna-litta.jpg') }}",
-      artist: "Leonardo da Vinci", artistId: "leonardo",
-      category: "Traditional", date: "1490-01-01" },
-
-    { id: 9, title: "Landscape with the Fall of Icarus",
-      description: "This painting, by Dutch artist Pieter Bruegel, is now part of the collection.",
-      image: "{{ asset('images/arts/landscape-icarus.jpg') }}",
-      artist: "Pieter Bruegel", artistId: "bruegel",
-      category: "Traditional", date: "1560-01-01" }
-];
-
-
-
-/* =====================================================
-   STATIC ARTISTS
-===================================================== */
-
-const staticArtists = {
-    leonardo: { name: "Leonardo da Vinci", username: "@leonardodavinci",
-                bio: "Italian Renaissance artist known for some of the most influential artworks in Western art." },
-    botticelli: { name: "Sandro Botticelli", username: "@sandrobotticelli",
-                  bio: "Italian Renaissance painter known for elegant mythological and religious compositions." },
-    michelangelo: { name: "Michelangelo", username: "@michelangelo",
-                    bio: "Italian Renaissance artist, sculptor, painter and architect." },
-    titian: { name: "Titian", username: "@titian",
-              bio: "Italian Renaissance painter known for his expressive use of color." },
-    blake: { name: "William Blake", username: "@williamblake",
-             bio: "English poet, painter and printmaker whose work combined art and literature." },
-    delacroix: { name: "Eugène Delacroix", username: "@delacroix",
-                 bio: "French Romantic artist known for dramatic compositions and expressive color." },
-    bruegel: { name: "Pieter Bruegel", username: "@pieterbruegel",
-               bio: "Dutch Renaissance painter known for detailed landscapes and scenes of everyday life." }
-};
-
-
-
-/* =====================================================
-   USER ARTS
-===================================================== */
-
-let userArts = [];
-
-try {
-    userArts = JSON.parse(localStorage.getItem("userArts") || "[]");
-    if (!Array.isArray(userArts)) userArts = [];
-} catch (error) { userArts = []; }
-
-
-const profileName =
-    localStorage.getItem("profileName") || "Unknown Artist";
-
-
-
-/* =====================================================
-   CONVERT USER ARTS
-===================================================== */
-
-const convertedUserArts = userArts.map((art, index) => {
-
-    const creator = art.creator || profileName;
-
-    return {
-        id: "user-" + (art.id || index),
-        originalId: art.id,
-        title: art.title || "Untitled",
-        description: art.description || "No description available.",
-        image: art.image || "",
-        artist: creator,
-        artistId:
-            "user-" + creator.toLowerCase()
-                .replace(/[^a-z0-9]+/g, "-")
-                .replace(/^-|-$/g, ""),
-        category: art.category || "Digital",
-        date: art.date || new Date().toISOString()
-    };
-});
-
-
-
-const allArts = [...staticArts, ...convertedUserArts];
+const categoryList = @json($categoriesData);
 
 
 
@@ -1058,31 +945,40 @@ function changeCategory(category) {
 
 function setActiveCategoryButton() {
 
-    const buttons = {
-        all: document.getElementById("allBtn"),
-        Traditional: document.getElementById("traditionalBtn"),
-        Digital: document.getElementById("digitalBtn")
-    };
+    /* Tombol "All" */
+
+    const allButton = document.getElementById("allBtn");
+
+    const activeClass = `
+        filter-btn px-5 py-1.5 rounded-full text-[9px]
+        bg-[#72ccd2] text-white
+    `;
+
+    const idleClass = `
+        filter-btn px-5 py-1.5 rounded-full text-[9px]
+        bg-white border border-gray-300 text-gray-500
+    `;
+
+    if (allButton) {
+        allButton.className = (currentCategory === "all")
+            ? activeClass
+            : idleClass;
+    }
 
 
-    Object.keys(buttons).forEach(key => {
+    /* Tombol kategori dari database */
 
-        const button = buttons[key];
+    (categoryList || []).forEach(category => {
 
-        if (key === currentCategory) {
+        const button = document.getElementById(
+            "categoryBtn" + category.id_kategori
+        );
 
-            button.className = `
-                filter-btn px-5 py-1.5 rounded-full text-[9px]
-                bg-[#72ccd2] text-white
-            `;
+        if (!button) return;
 
-        } else {
-
-            button.className = `
-                filter-btn px-5 py-1.5 rounded-full text-[9px]
-                bg-white border border-gray-300 text-gray-500
-            `;
-        }
+        button.className = (category.nama_kategori === currentCategory)
+            ? activeClass
+            : idleClass;
     });
 }
 

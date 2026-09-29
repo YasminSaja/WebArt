@@ -346,7 +346,11 @@
 
                 <form
                     id="registerForm"
+                    method="POST"
+                    action="{{ route('register') }}"
                     class="w-full flex-1 flex flex-col">
+
+                    @csrf
 
 
                     <!-- ================================================= -->
@@ -366,6 +370,7 @@
 
                     <input
                         id="name"
+                        name="name"
                         type="text"
                         placeholder="Type here"
                         autocomplete="name"
@@ -402,6 +407,7 @@
 
                     <input
                         id="email"
+                        name="email"
                         type="email"
                         placeholder="Type here"
                         autocomplete="email"
@@ -438,6 +444,7 @@
 
                     <input
                         id="password"
+                        name="password"
                         type="password"
                         placeholder="Type here"
                         autocomplete="new-password"
@@ -474,6 +481,7 @@
 
                     <input
                         id="passwordConfirm"
+                        name="password_confirmation"
                         type="password"
                         placeholder="Type here"
                         autocomplete="new-password"
@@ -674,90 +682,103 @@
 
 
             /* ==========================================
-               CEK EMAIL DUPLIKAT (dummy)
+               SIMPAN KE DATABASE
+            ==========================================
+
+               Bagian dummy sebelumnya (menyimpan user ke
+               localStorage, termasuk password polos) sudah
+               dihapus.
+
+               Untuk menyambungkan, aktifkan route di
+               routes/web.php lalu pilih salah satu cara:
+
+               CARA 1 — form biasa (paling sederhana).
+               Ubah <form> register menjadi:
+
+                   <form method="POST" action="{{ route('register') }}">
+                       @csrf
+                       <input name="name" ...>
+                       <input name="email" ...>
+                       <input name="password" ...>
+                       <input name="password_confirmation" ...>
+
+               lalu HAPUS seluruh blok submit ini supaya form
+               dikirim normal ke server.
+
+               CARA 2 — tetap pakai JavaScript, kirim dengan fetch:
+
+                   fetch('{{ route('register') }}', {
+                       method: 'POST',
+                       headers: {
+                           'Content-Type': 'application/json',
+                           'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                       },
+                       body: JSON.stringify({
+                           name: name,
+                           email: email,
+                           password: password,
+                           password_confirmation: passwordConfirm
+                       })
+                   })
+                   .then(r => r.json())
+                   .then(data => {
+                       if (data.success) {
+                           window.location.href = data.redirect;
+                       } else {
+                           showError('emailError', data.message);
+                       }
+                   });
+
+               Validasi email duplikat sudah ditangani server
+               oleh rule 'unique:users,email' di
+               AuthController@register().
+
+               AuthController sudah siap di
+               app/Http/Controllers/AuthController.php.
             ========================================== */
-
-            const pendingUsers =
-                getPendingUsers();
-
-
-            const emailExists =
-                pendingUsers.some(u =>
-                    u.email.toLowerCase() === email
-                );
-
-
-            if (emailExists) {
-
-                showError('emailError',
-                    'Email sudah terdaftar.');
-
-                return;
-
-            }
-
-
 
             /* ==========================================
-               SIMPAN KE LOCALSTORAGE (DUMMY)
-            ========================================== */
+               KIRIM KE SERVER
+            ==========================================
+               Pakai submit() native supaya handler ini
+               tidak menahan pengiriman. Form sudah punya
+               action, method, dan @csrf di atas. */
 
-            const newUser = {
-
-                id:
-                    'pending-' +
-                    Date.now(),
-
-                nama:
-                    name,
-
-                email:
-                    email,
-
-                password:
-                    password, // dummy only, nanti dihapus pas backend
-
-                status:
-                    'pending',
-
-                tanggal:
-                    new Date().toISOString()
-
-            };
-
-
-            pendingUsers.push(newUser);
-
-
-            localStorage.setItem(
-                'pendingUsers',
-                JSON.stringify(pendingUsers)
-            );
-
-
-            /* ==========================================
-               REDIRECT KE HALAMAN PENDING APPROVAL
-            ========================================== */
-
-            /*
-
-               SEMENTARA FRONTEND:
-
-               Kirim nama & email lewat query string supaya
-               halaman pending bisa nampilin "Hi, {nama}".
-
-               NANTI BACKEND:
-
-               Laravel Auth akan otomatis ambil data dari
-               session / database.
-
-            */
-
-            window.location.href =
-                "{{ url('/pending-approval') }}" +
-                "?email=" + encodeURIComponent(email);
+            event.target.submit();
 
         });
+
+
+
+        /* =====================================================
+           PESAN DARI SERVER
+           AuthController@register() mengirim balik ke halaman
+           ini kalau validasi gagal, mis. email sudah dipakai.
+        ===================================================== */
+
+        @if ($errors->has('name'))
+
+            showError('nameError', "{{ $errors->first('name') }}");
+
+        @endif
+
+        @if ($errors->has('email'))
+
+            showError('emailError', "{{ $errors->first('email') }}");
+
+        @endif
+
+        @if ($errors->has('password'))
+
+            showError('passwordError', "{{ $errors->first('password') }}");
+
+        @endif
+
+        @if (old('email'))
+
+            document.getElementById('email').value = "{{ old('email') }}";
+
+        @endif
 
 
 
@@ -771,26 +792,6 @@
 
             el.textContent = message;
             el.classList.remove('hidden');
-
-        }
-
-
-        function getPendingUsers() {
-
-            try {
-
-                const data =
-                    JSON.parse(
-                        localStorage.getItem('pendingUsers') || '[]'
-                    );
-
-                return Array.isArray(data) ? data : [];
-
-            } catch (e) {
-
-                return [];
-
-            }
 
         }
 

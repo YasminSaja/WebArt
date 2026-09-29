@@ -365,21 +365,41 @@
 
                         <select
                             id="artCategory"
+                            name="id_kategori"
                             class="input-effect w-[120px] h-[27px] rounded border border-[#cbb8b8] bg-[#eadada] text-[9px] text-gray-600 px-2 outline-none"
                         >
 
-                            <option value="Traditional">
-                                Traditional
-                            </option>
+                            @forelse ($categories as $category)
 
-                            <option value="Digital">
-                                Digital
-                            </option>
+                                {{--
+                                    value = id_kategori  -> dikirim ke
+                                    server saat form di-submit.
+
+                                    Teks di dalam <option> = nama
+                                    kategori -> yang dilihat user.
+                                --}}
+                                <option
+                                    value="{{ $category->id_kategori }}">
+                                    {{ $category->nama_kategori }}
+                                </option>
+
+                            @empty
+
+                                <option value="">
+                                    No category yet
+                                </option>
+
+                            @endforelse
 
                         </select>
 
 
-                        <!-- LIVE CATEGORY -->
+                        <!-- LIVE CATEGORY
+                             Isi badge ini BUKAN dari server, tapi
+                             diisi oleh JS dari teks option yang
+                             sedang dipilih (lihat updateCategoryBadge).
+                             Kalau ditulis manual di sini, bisa jadi
+                             tidak sama dengan pilihan default. -->
 
                         <div class="mt-3">
 
@@ -387,7 +407,6 @@
                                 id="categoryBadge"
                                 class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#ffdf96] text-[#c83232] text-[7px] transition"
                             >
-                                ✦ Traditional
                             </span>
 
                         </div>
@@ -553,13 +572,40 @@
 
 
         // ================= CATEGORY =================
+        //
+        // PENTING: nilai (value) tiap <option> adalah
+        // id_kategori, bukan nama kategori. Jadi kalau kita
+        // menulis this.value, yang muncul di badge adalah
+        // angka (mis. "7"), bukan "Traditional".
+        //
+        // Yang kita butuhkan adalah TEKS option yang sedang
+        // dipilih:
+        //     this.options[this.selectedIndex].text
+        //     ^^^^^^^^  daftar semua <option>
+        //            ^^^^^^^^^^^^^^^^^^  nomor urut yang dipilih
+        //                               .text  teks yang terlihat
 
-        artCategory.addEventListener("change", function () {
+        function updateCategoryBadge() {
 
-            categoryBadge.textContent =
-                "✦ " + this.value;
+            const option = artCategory.options[artCategory.selectedIndex];
 
-        });
+            const name = option
+                ? option.text.trim()
+                : "";
+
+            categoryBadge.textContent = name
+                ? "✦ " + name
+                : "✦ No category yet";
+
+        }
+
+
+        artCategory.addEventListener("change", updateCategoryBadge);
+
+
+        /* Set badge sesuai pilihan AWAL, supaya tidak kosong
+           dan tidak menampilkan kategori yang keliru. */
+        updateCategoryBadge();
 
 
 
@@ -638,90 +684,69 @@
             }
 
 
-            const reader =
-                new FileReader();
+            if (!category) {
+                alert("Please choose a category.");
+                return;
+            }
 
 
-            reader.onload = function (e) {
-
-
-                // Ambil nama profile
-
-                const creator =
-                    localStorage.getItem("profileName")
-                    || "Unknown Artist";
-
-
-                // Ambil art lama
-
-                const arts =
-                    JSON.parse(
-                        localStorage.getItem("userArts") || "[]"
-                    );
-
-
-                // Buat art baru
-
-                const newArt = {
-
-                    id: Date.now(),
-
-                    title: title,
-
-                    description: description,
-
-                    category: category,
-
-                    image: e.target.result,
-
-                    creator: creator,
-
-                    date: new Date().toISOString()
-
-                };
-
-
-                // Art terbaru di depan
-
-                arts.unshift(newArt);
-
-
-                // Simpan
-
-                localStorage.setItem(
-                    "userArts",
-                    JSON.stringify(arts)
+            const button =
+                document.querySelector(
+                    'button[onclick="insertArt()"]'
                 );
 
+            const originalLabel = button.textContent;
 
-                // Tombol feedback
+            button.textContent = "Uploading...";
 
-                const button =
-                    document.querySelector(
-                        'button[onclick="insertArt()"]'
-                    );
+            button.disabled = true;
 
-                button.textContent =
-                    "Saved ✦";
-
-                button.disabled = true;
-
-                button.style.opacity = "0.7";
+            button.style.opacity = "0.7";
 
 
-                // Kembali profile
+            // Siapkan data karya untuk dikirim ke server
 
-                setTimeout(() => {
+            const body = new FormData();
 
-                    window.location.href =
-                        "{{ route('user.profile') }}";
-
-                }, 500);
-
-            };
+            body.append('judul', title);
+            body.append('deskripsi', description);
+            body.append('id_kategori', category);
+            body.append('file_gambar', image);
 
 
-            reader.readAsDataURL(image);
+            fetch("{{ route('arts.store') }}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': "{{ csrf_token() }}",
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: body
+            })
+                .then(r => r.json().then(data => ({ ok: r.ok, data })))
+                .then(({ ok, data }) => {
+
+                    if (!ok) {
+                        button.textContent = originalLabel;
+                        button.disabled = false;
+                        button.style.opacity = "1";
+                        alert(data.message || "Upload failed.");
+                        return;
+                    }
+
+                    button.textContent = "Saved ✦";
+
+                    setTimeout(() => {
+                        window.location.href = data.redirect;
+                    }, 500);
+
+                })
+                .catch(() => {
+                    button.textContent = originalLabel;
+                    button.disabled = false;
+                    button.style.opacity = "1";
+                    alert("Upload failed. Please try again.");
+                });
 
         }
 

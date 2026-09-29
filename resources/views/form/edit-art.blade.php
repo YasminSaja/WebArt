@@ -179,13 +179,21 @@
                        text-[9px]
                        mb-8">
 
-                <option value="Digital">
-                    Digital
-                </option>
+                @forelse ($categories as $category)
 
-                <option value="Traditional">
-                    Traditional
-                </option>
+                    <option
+                        value="{{ $category->id_kategori }}"
+                        @selected($category->id_kategori === $art->id_kategori)>
+                        {{ $category->nama_kategori }}
+                    </option>
+
+                @empty
+
+                    <option value="">
+                        No category yet
+                    </option>
+
+                @endforelse
 
             </select>
 
@@ -230,26 +238,49 @@
             new URLSearchParams(window.location.search);
 
         const artId =
-            params.get("id");
+            {{ $art->id_karya }};
 
 
         /*
         |--------------------------------------------------------------------------
         | AMBIL DATA ART
         |--------------------------------------------------------------------------
+        |
+        | Data dikirim oleh KaryaController@edit() sebagai
+        | $artData, jadi di sini TIDAK PERLU tahu nama kolom
+        | aslinya di database.
+        |
+        | Bentuk tiap item:
+        |     { id, title, description, image, category }
+        |
+        | CATATAN: `category` di sini sengaja berisi
+        | id_kategori (dalam bentuk string), BUKAN nama
+        | kategori, supaya nilainya cocok dengan
+        | <option value="..."> di form.
+        |
+        | Dulu di file ini ada `let arts = []` DAN
+        | `const arts = ...` sekaligus. Dua deklarasi dengan
+        | nama sama di satu scope = SyntaxError:
+        | "Identifier 'arts' has already been declared",
+        | sehingga seluruh script form ini tidak jalan.
+        | Sekarang hanya ada satu deklarasi, di bawah.
+        |
+        | PENTING: jangan menulis nama perintah Blade
+        | (yang diawali tanda "at", seperti at-json atau
+        | at-if) di dalam komentar. Blade tetap
+        | mengompilasinya, jadi tulisan itu bisa bikin
+        | halaman error. Tulis "at-json" saja di komentar.
+        |
         */
-
-        let arts =
-            JSON.parse(
-                localStorage.getItem("userArts") || "[]"
-            );
-
 
         /*
         |--------------------------------------------------------------------------
         | CARI ART
         |--------------------------------------------------------------------------
         */
+
+        const arts = @json($artData);
+
 
         let art =
             arts.find(
@@ -290,8 +321,19 @@
             document.getElementById("description").value =
                 art.description || "";
 
+            /* Pilih kategori yang benar.
+
+               CATATAN: nilai <option> di select ini adalah
+               id_kategori (mis. "8"), BUKAN nama kategori.
+               Karena itu art.category juga sengaja diisi
+               id_kategori di KaryaController@edit().
+
+               Jangan pakai nama kategori sebagai fallback —
+               select tidak punya option bernilai "Digital",
+               jadi .value = "Digital" akan diabaikan diam-diam
+               dan select tetap menampilkan kategori pertama. */
             document.getElementById("category").value =
-                art.category || "Digital";
+                art.category ?? "";
 
         }
 
@@ -369,16 +411,12 @@
 
 
             /*
-            | CARI INDEX ART
+            |--------------------------------------------------------------------------
+            | CEK ART MASIH ADA
+            |--------------------------------------------------------------------------
             */
 
-            const index =
-                arts.findIndex(
-                    item => String(item.id) === String(artId)
-                );
-
-
-            if (index === -1) {
+            if (!art) {
 
                 alert("Art tidak ditemukan.");
 
@@ -388,81 +426,86 @@
 
 
             /*
-            | UPDATE DATA
+            |--------------------------------------------------------------------------
+            | KIRIM PERUBAHAN KE DATABASE
+            |--------------------------------------------------------------------------
+            |
+            | Data dummy dari localStorage sudah dihapus.
+            |
+            | CARA 1 — form biasa (paling sederhana).
+            | Ubah <form> menjadi:
+            |
+            |     <form method="POST"
+            |           action="{{ route('arts.update', $art->id_karya) }}"
+            |           enctype="multipart/form-data">
+            |         @csrf
+            |         @method('PATCH')
+            |
+            | lalu HAPIS seluruh blok script ini.
+            |
+            | CARA 2 — tetap pakai JavaScript, kirim dengan fetch:
+            |
+            |     const body = new FormData();
+            |     body.append('_method', 'PATCH');
+            |     body.append('judul', title);
+            |     body.append('deskripsi', description);
+            |     body.append('id_kategori', category);
+            |     if (file) body.append('file_gambar', file);
+            |
+            |     fetch('/arts/' + artId, {
+            |         method: 'POST',
+            |         headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            |         body: body
+            |     }).then(() => {
+            |         window.location.href = '{{ route('user.profile') }}';
+            |     });
+            |
             */
 
-            arts[index].title =
-                title;
-
-            arts[index].description =
-                description;
-
-            arts[index].category =
-                category;
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | JIKA ADA GAMBAR BARU
-            |--------------------------------------------------------------------------
-            */
 
             const file =
                 document.getElementById("image").files[0];
 
 
+            if (!category) {
+                alert("Category belum dipilih.");
+                return;
+            }
+
+
+            const body = new FormData();
+
+            body.append('_method', 'PUT');
+            body.append('judul', title);
+            body.append('deskripsi', description);
+            body.append('id_kategori', category);
+
             if (file) {
-
-                const reader =
-                    new FileReader();
-
-
-                reader.onload =
-                    function(e) {
-
-                        arts[index].image =
-                            e.target.result;
-
-
-                        localStorage.setItem(
-                            "userArts",
-                            JSON.stringify(arts)
-                        );
-
-
-                        alert("Art berhasil diperbarui!");
-
-                        window.location.href =
-                            "{{ route('user.profile') }}";
-
-                    };
-
-
-                reader.readAsDataURL(file);
-
+                body.append('file_gambar', file);
             }
 
 
-            /*
-            |--------------------------------------------------------------------------
-            | JIKA TIDAK ADA GAMBAR BARU
-            |--------------------------------------------------------------------------
-            */
+            fetch("{{ route('arts.update', $art->id_karya) }}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': "{{ csrf_token() }}",
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: body
+            })
+                .then(r => r.json().then(data => ({ ok: r.ok, data })))
+                .then(({ ok, data }) => {
 
-            else {
+                    if (!ok) {
+                        alert(data.message || "Save failed.");
+                        return;
+                    }
 
-                localStorage.setItem(
-                    "userArts",
-                    JSON.stringify(arts)
-                );
+                    window.location.href = data.redirect;
 
-
-                alert("Art berhasil diperbarui!");
-
-                window.location.href =
-                    "{{ route('user.profile') }}";
-
-            }
+                })
+                .catch(() => alert("Save failed. Please try again."));
 
         }
 

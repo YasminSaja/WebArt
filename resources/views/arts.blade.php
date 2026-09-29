@@ -508,10 +508,6 @@
                     class="text-xl font-bold text-gray-800 mt-1">
                 </h2>
 
-                <p id="artistModalUsername"
-                   class="text-[9px] text-[#c83232] mt-1">
-                </p>
-
                 <p id="artistModalBio"
                    class="text-[10px] leading-5 text-gray-500
                           mt-4 max-w-sm mx-auto">
@@ -602,19 +598,16 @@
 
         function getArtistAvatarHtml(art, size = "sm") {
 
-            const myName = localStorage.getItem("profileName") || "";
-            const myPhoto = localStorage.getItem("profilePhoto") || "";
+            /* Foto artist sekarang diambil dari database: art.artistPhoto */
 
-            const isMe =
-                myName &&
-                myName.toLowerCase() === (art.artist || "").toLowerCase();
+            const photo = art.artistPhoto || "";
 
-            const hasPhoto = myPhoto && myPhoto.trim() !== "";
+            const hasPhoto = photo && photo.trim() !== "";
 
 
-            /* Artist = user login & punya foto → pakai foto */
+            /* Artist punya foto → pakai foto */
 
-            if (isMe && hasPhoto) {
+            if (hasPhoto) {
 
                 const sizes = {
                     sm: "w-10 h-10",
@@ -623,8 +616,8 @@
                 };
 
                 return `
-                    <img src="${myPhoto}"
-                         alt="${art.artist}"
+                    <img src="${escapeHtml(photo)}"
+                         alt="${escapeHtml(art.artist || '')}"
                          class="${sizes[size]} rounded-full object-cover
                                 border-2 border-white shadow-md">
                 `;
@@ -639,140 +632,28 @@
 
 
         /* =================================================
-           STATIC ART DATA
+           ART DATA — DARI DATABASE
+        =================================================
+           Data dikirim oleh KaryaController@index() lewat
+           FrontendData::arts(), jadi di sini TIDAK PERLU
+           tahu nama kolom aslinya (judul, file_gambar, ...).
+
+           Bentuk item yang dipakai semua function di bawah:
+           {
+               id, title, description, image,
+               artist, artistId, artistPhoto, category, date
+           }
+
+           Kalau nanti butuh ubah bentuk data ini, ubah di
+           app/Support/FrontendData.php — bukan di file ini.
         ================================================= */
 
-        const staticArts = [
-            { id: 1, title: "Mona Lisa",
-              description: "Probably the most famous painting in the world is Leonardo da Vinci's La Gioconda, better known as Mona Lisa.",
-              image: "{{ asset('images/arts/mona-lisa.jpg') }}",
-              artist: "Leonardo da Vinci", artistId: "leonardo",
-              category: "Traditional", date: "1503-01-01" },
+        const allArts = @json($artsData);
 
-            { id: 2, title: "The Birth of Venus",
-              description: "Another of the most famous paintings is The Birth of Venus. Botticelli's painting illustrates the myth of the birth of Aphrodite.",
-              image: "{{ asset('images/arts/birth-of-venus.jpg') }}",
-              artist: "Sandro Botticelli", artistId: "botticelli",
-              category: "Traditional", date: "1485-01-01" },
-
-            { id: 3, title: "The Creation Of Adam",
-              description: "Michelangelo's fresco The Creation of Adam, which adorns the ceiling of the Sistine Chapel.",
-              image: "{{ asset('images/arts/creation-of-adam.jpg') }}",
-              artist: "Michelangelo", artistId: "michelangelo",
-              category: "Traditional", date: "1512-01-01" },
-
-            { id: 4, title: "The Last Supper",
-              description: "For more than 500 years of its existence, the famous fresco The Last Supper has been restored at least five times.",
-              image: "{{ asset('images/arts/last-supper.jpg') }}",
-              artist: "Leonardo da Vinci", artistId: "leonardo",
-              category: "Traditional", date: "1498-01-01" },
-
-            { id: 5, title: "The Sacred and Profane Love",
-              description: "The current name of the painting was not given by Titian himself, but appeared only two centuries later.",
-              image: "{{ asset('images/arts/sacred-love.jpg') }}",
-              artist: "Titian", artistId: "titian",
-              category: "Traditional", date: "1514-01-01" },
-
-            { id: 6, title: "The Ancient of Days",
-              description: "This popular artwork by William Blake is now in the British Museum, London.",
-              image: "{{ asset('images/arts/ancient-days.jpg') }}",
-              artist: "William Blake", artistId: "blake",
-              category: "Traditional", date: "1794-01-01" },
-
-            { id: 7, title: "Liberty Leading the People",
-              description: "Liberty Leading the People by Eugene Delacroix, as the best known example.",
-              image: "{{ asset('images/arts/liberty-leading.jpg') }}",
-              artist: "Eugène Delacroix", artistId: "delacroix",
-              category: "Traditional", date: "1830-01-01" },
-
-            { id: 8, title: "The Madonna Litta",
-              description: "This masterpiece, a world classic long ago, is kept in the Hermitage in St. Petersburg.",
-              image: "{{ asset('images/arts/madonna-litta.jpg') }}",
-              artist: "Leonardo da Vinci", artistId: "leonardo",
-              category: "Traditional", date: "1490-01-01" },
-
-            { id: 9, title: "Landscape with the Fall of Icarus",
-              description: "This painting, by Dutch artist Pieter Bruegel, is now part of the collection.",
-              image: "{{ asset('images/arts/landscape-icarus.jpg') }}",
-              artist: "Pieter Bruegel", artistId: "bruegel",
-              category: "Traditional", date: "1560-01-01" }
-        ];
-
-
-
-        /* =================================================
-           STATIC ARTIST DATA
-        ================================================= */
-
-        const staticArtists = {
-            leonardo: { name: "Leonardo da Vinci", username: "@leonardodavinci",
-                        bio: "Italian Renaissance artist known for some of the most influential artworks in Western art." },
-            botticelli: { name: "Sandro Botticelli", username: "@sandrobotticelli",
-                          bio: "Italian Renaissance painter known for elegant mythological and religious compositions." },
-            michelangelo: { name: "Michelangelo", username: "@michelangelo",
-                            bio: "Italian Renaissance artist, sculptor, painter and architect." },
-            titian: { name: "Titian", username: "@titian",
-                      bio: "Italian Renaissance painter known for his expressive use of color." },
-            blake: { name: "William Blake", username: "@williamblake",
-                     bio: "English poet, painter and printmaker whose work combined art and literature." },
-            delacroix: { name: "Eugène Delacroix", username: "@delacroix",
-                         bio: "French Romantic artist known for dramatic compositions and expressive color." },
-            bruegel: { name: "Pieter Bruegel", username: "@pieterbruegel",
-                       bio: "Dutch Renaissance painter known for detailed landscapes and scenes of everyday life." }
-        };
-
-
-
-        /* =================================================
-           LOAD USER ARTS
-        ================================================= */
-
-        let userArts = [];
-
-        try {
-            userArts = JSON.parse(localStorage.getItem("userArts") || "[]");
-            if (!Array.isArray(userArts)) userArts = [];
-        } catch (error) { userArts = []; }
-
-
-
-        /* =================================================
-           CONVERT USER ARTS
-        ================================================= */
-
-        const convertedUserArts = userArts.map((art, index) => {
-
-            const artistName =
-                art.creator ||
-                art.artist ||
-                localStorage.getItem("profileName") ||
-                "Unknown Artist";
-
-            const artistId =
-                art.artistId ||
-                "user-" + artistName.toLowerCase()
-                    .replace(/[^a-z0-9]+/g, "-")
-                    .replace(/^-|-$/g, "");
-
-            return {
-                id: "user-" + (art.id !== undefined ? art.id : index),
-                title: art.title || art.judul || "Untitled",
-                description: art.description || art.deskripsi || "No description available.",
-                image: art.image || art.file_gambar || art.file || "",
-                artist: artistName,
-                artistId: artistId,
-                category: art.category || art.kategori || "Digital",
-                date: art.date || art.createdAt || new Date().toISOString()
-            };
-        });
-
-
-
-        /* =================================================
-           ALL ARTS
-        ================================================= */
-
-        let allArts = [...staticArts, ...convertedUserArts];
+        /* Daftar artist untuk openArtist(). Bentuknya OBJECT
+           yang key-nya = id artist, jadiCara memakainya:
+               artistDirectory[artistId] */
+        const artistDirectory = @json($artistDirectory);
 
 
 
@@ -1120,45 +1001,28 @@
 
         function openArtist(artistId, artistName) {
 
-            const artist = staticArtists[artistId];
+            /* artistDirectory diisi dari database (lihat deklarasinya di atas) */
 
-            let info;
+            const artist = artistDirectory[artistId];
 
-
-            if (artist) {
-
-                info = artist;
-
-            } else {
-
-                /* User artist — cek apakah ini user yang login */
-
-                const myName = localStorage.getItem("profileName") || "";
-                const myPhoto = localStorage.getItem("profilePhoto") || "";
-                const myBio = localStorage.getItem("profileBio") || "";
-
-                const isMe = myName &&
-                             myName.toLowerCase() === (artistName || "").toLowerCase();
-
-                info = {
-                    name: artistName || "Unknown Artist",
-                    username: "@" + (artistName || "artist")
-                        .toLowerCase().replace(/\s+/g, ""),
-                    bio: myBio || "CreateTopia artist.",
-                    image: (isMe && myPhoto) ? myPhoto : ""
-                };
-            }
+            const info = artist || {
+                name: artistName || "Unknown Artist",
+                bio: "",
+                image: ""
+            };
 
 
             document.getElementById("artistModalName").textContent = info.name;
-            document.getElementById("artistModalUsername").textContent = info.username;
-            document.getElementById("artistModalBio").textContent = info.bio;
+            document.getElementById("artistModalBio").textContent = info.bio || "";
 
 
             /* AVATAR ARTIST MODAL */
 
             document.getElementById("artistModalAvatar").innerHTML =
-                getArtistAvatarHtml({ artist: info.name }, "lg");
+                getArtistAvatarHtml({
+                    artist: info.name,
+                    artistPhoto: info.image || ""
+                }, "lg");
 
 
             /* WORKS */

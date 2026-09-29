@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('judul');
             $table->text('deskripsi')->nullable();
             $table->string('file_gambar');
-            $table->foreignId('id_user')->constrained('users','id_user');
-            $table->foreignId('id_kategori')->constrained('kategoris','id_kategori')->restrictOnDelete;
+            $table->foreignId('id_user')->constrained('users', 'id_user');
+            $table->foreignId('id_kategori')->constrained('kategoris', 'id_kategori')->restrictOnDelete();
             $table->timestamps();
         });
     }
